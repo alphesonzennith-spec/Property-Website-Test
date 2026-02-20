@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRegulatorySection } from '@/hooks/useRegulatoryRates';
 import { calculateTDSR, calculateMSR, getMaxLoanAmount } from '@/lib/calculations/borrowing';
 import { PropertyType } from '@/types';
@@ -21,6 +21,41 @@ import { Button } from '@/components/ui/button';
 export default function TdsrMsrCalculatorPage() {
   // Fetch borrowing config from regulatory rates
   const { data: borrowingConfig, isLoading, error, refetch } = useRegulatorySection('borrowing');
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'tdsr' | 'msr'>('tdsr');
+
+  // TDSR state
+  const [applicantMode, setApplicantMode] = useState<'single' | 'joint'>('single');
+
+  // Income state
+  const [fixedIncome, setFixedIncome] = useState<number>(0);
+  const [variableIncome, setVariableIncome] = useState<number>(0);
+  const [fixedIncome2, setFixedIncome2] = useState<number>(0);
+  const [variableIncome2, setVariableIncome2] = useState<number>(0);
+
+  // Debt state
+  const [creditCardDebts, setCreditCardDebts] = useState<number>(0);
+  const [carLoan, setCarLoan] = useState<number>(0);
+  const [otherHomeLoans, setOtherHomeLoans] = useState<number>(0);
+  const [otherLoans, setOtherLoans] = useState<number>(0);
+
+  // Loan parameters
+  const [stressTestRate, setStressTestRate] = useState<number>(0);
+  const [loanTenureYears, setLoanTenureYears] = useState<number>(25);
+  const [desiredLoanAmount, setDesiredLoanAmount] = useState<number>(0);
+
+  // MSR state
+  const [msrIncome, setMsrIncome] = useState<number>(0);
+  const [msrPropertyType, setMsrPropertyType] = useState<PropertyType>(PropertyType.HDB);
+  const [msrProposedMortgage, setMsrProposedMortgage] = useState<number>(0);
+
+  // Initialize stress test rate from config
+  React.useEffect(() => {
+    if (borrowingConfig?.mortgage?.bankLoan?.typicalInterestRangePct?.max) {
+      setStressTestRate(borrowingConfig.mortgage.bankLoan.typicalInterestRangePct.max);
+    }
+  }, [borrowingConfig]);
 
   // Loading state
   if (isLoading) {
