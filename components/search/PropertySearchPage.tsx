@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { AISearchBar } from './AISearchBar';
 import { FilterSidebar } from './FilterSidebar';
@@ -13,7 +13,7 @@ interface PropertySearchPageProps {
   listingType: ListingType;
 }
 
-export function PropertySearchPage({ listingType }: PropertySearchPageProps) {
+function SearchPageContent({ listingType }: PropertySearchPageProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { filters, setFilters } = useSearchStore();
@@ -88,5 +88,13 @@ export function PropertySearchPage({ listingType }: PropertySearchPageProps) {
       {/* Floating Comparison Bar */}
       <ComparisonFloatingBar />
     </main>
+  );
+}
+
+export function PropertySearchPage({ listingType }: PropertySearchPageProps) {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+      <SearchPageContent listingType={listingType} />
+    </Suspense>
   );
 }
