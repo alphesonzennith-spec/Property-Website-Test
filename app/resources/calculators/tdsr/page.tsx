@@ -57,6 +57,110 @@ export default function TdsrMsrCalculatorPage() {
     }
   }, [borrowingConfig]);
 
+  // Calculate total incomes (single or joint)
+  const totalFixedIncome = applicantMode === 'joint'
+    ? fixedIncome + fixedIncome2
+    : fixedIncome;
+
+  const totalVariableIncome = applicantMode === 'joint'
+    ? variableIncome + variableIncome2
+    : variableIncome;
+
+  // Calculate total monthly debts
+  const totalMonthlyDebts = creditCardDebts + carLoan + otherHomeLoans + otherLoans;
+
+  // TDSR Calculation
+  const tdsrResult = useMemo(() => {
+    if (!borrowingConfig) return null;
+
+    const grossMonthlyIncome = totalFixedIncome + totalVariableIncome;
+    if (grossMonthlyIncome === 0) return null;
+
+    const input: TDSRInput = {
+      grossMonthlyIncome,
+      existingMonthlyDebts: totalMonthlyDebts,
+      proposedMortgageRepayment: 0, // Will calculate max loan first
+      hasVariableIncome: totalVariableIncome > 0,
+    };
+
+    return calculateTDSR(input, borrowingConfig.tdsr);
+  }, [borrowingConfig, totalFixedIncome, totalVariableIncome, totalMonthlyDebts]);
+
+  // Max Loan Calculation (TDSR)
+  const maxLoanTDSR = useMemo(() => {
+    if (!borrowingConfig || !tdsrResult) return null;
+
+    const grossMonthlyIncome = totalFixedIncome + totalVariableIncome;
+    if (grossMonthlyIncome === 0) return null;
+
+    return getMaxLoanAmount(
+      grossMonthlyIncome,
+      totalMonthlyDebts,
+      PropertyType.Condo, // Default for TDSR
+      stressTestRate,
+      loanTenureYears,
+      {
+        tdsrLimit: borrowingConfig.tdsr.limit,
+        msrLimit: borrowingConfig.msr.limit,
+        msrApplicablePropertyTypes: borrowingConfig.msr.applicablePropertyTypes,
+      }
+    );
+  }, [borrowingConfig, totalFixedIncome, totalVariableIncome, totalMonthlyDebts, stressTestRate, loanTenureYears, tdsrResult]);
+
+  // MSR Calculation
+  const msrResult = useMemo(() => {
+    if (!borrowingConfig || msrIncome === 0) return null;
+
+    const input: MSRInput = {
+      grossMonthlyIncome: msrIncome,
+      proposedMortgageRepayment: msrProposedMortgage,
+    };
+
+    return calculateMSR(input, borrowingConfig.msr);
+  }, [borrowingConfig, msrIncome, msrProposedMortgage]);
+
+  // Max Loan Calculation (MSR)
+  const maxLoanMSR = useMemo(() => {
+    if (!borrowingConfig || msrIncome === 0) return null;
+
+    return getMaxLoanAmount(
+      msrIncome,
+      0, // No existing debts considered for MSR
+      msrPropertyType,
+      stressTestRate,
+      loanTenureYears,
+      {
+        tdsrLimit: borrowingConfig.tdsr.limit,
+        msrLimit: borrowingConfig.msr.limit,
+        msrApplicablePropertyTypes: borrowingConfig.msr.applicablePropertyTypes,
+      }
+    );
+  }, [borrowingConfig, msrIncome, msrPropertyType, stressTestRate, loanTenureYears]);
+
+  // Traffic light status for TDSR
+  const trafficLightStatus = useMemo(() => {
+    if (!tdsrResult) return null;
+
+    const ratio = tdsrResult.tdsrRatio;
+    if (ratio < 0.40) return { color: 'green', label: 'Comfortable - Well within TDSR limit' };
+    if (ratio < 0.55) return { color: 'yellow', label: 'Approaching limit - Consider reducing obligations' };
+    return { color: 'red', label: 'Exceeds TDSR - Loan will be rejected' };
+  }, [tdsrResult]);
+
+  // Number formatter
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-SG', {
+      style: 'currency',
+      currency: 'SGD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  const formatPercentage = (value: number) => {
+    return (value * 100).toFixed(1) + '%';
+  };
+
   // Loading state
   if (isLoading) {
     return (
