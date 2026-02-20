@@ -282,4 +282,66 @@ export const propertiesRouter = router({
       viewCounts.set(input.id, current + 1);
       return { viewsCount: current + 1 };
     }),
+
+  /** Parse natural language query into structured filters (MOCK implementation). */
+  parseNaturalLanguageQuery: publicProcedure
+    .input(z.object({ query: z.string() }))
+    .query(async ({ input }) => {
+      // MOCK: Replace with actual AI/NLP service when ready
+      // TODO: Document in claude.md - integrate with AI service for production
+      await new Promise((r) => setTimeout(r, 250));
+
+      const query = input.query.toLowerCase();
+      const filters: Partial<PropertyFilters> = {};
+      const extractedTags: string[] = [];
+
+      // Extract bedroom count
+      const bedroomMatch = query.match(/(\d+)\s*(?:bed|bedroom)/i);
+      if (bedroomMatch) {
+        filters.bedroomsMin = parseInt(bedroomMatch[1], 10);
+        extractedTags.push(`${bedroomMatch[1]} Bed`);
+      }
+
+      // Extract property type
+      if (query.includes('hdb')) {
+        filters.propertyType = PropertyType.HDB;
+        extractedTags.push('HDB');
+      } else if (query.includes('condo')) {
+        filters.propertyType = PropertyType.Condo;
+        extractedTags.push('Condo');
+      } else if (query.includes('landed')) {
+        filters.propertyType = PropertyType.Landed;
+        extractedTags.push('Landed');
+      }
+
+      // Extract district/town (simple keyword matching)
+      if (query.includes('bedok')) {
+        filters.district = 'D16';
+        extractedTags.push('Bedok (D16)');
+      } else if (query.includes('tampines')) {
+        filters.district = 'D18';
+        extractedTags.push('Tampines (D18)');
+      } else if (query.includes('punggol')) {
+        filters.district = 'D19';
+        extractedTags.push('Punggol (D19)');
+      } else if (query.includes('orchard')) {
+        filters.district = 'D09';
+        extractedTags.push('Orchard (D09)');
+      }
+
+      // Extract price range
+      const priceMatch = query.match(/(?:under|below|<)\s*\$?(\d+(?:\.\d+)?)\s*([mk]?)/i);
+      if (priceMatch) {
+        let price = parseFloat(priceMatch[1]);
+        if (priceMatch[2].toLowerCase() === 'm') price *= 1000000;
+        if (priceMatch[2].toLowerCase() === 'k') price *= 1000;
+        filters.priceMax = price;
+        extractedTags.push(`< $${(price / 1000000).toFixed(1)}M`);
+      }
+
+      return {
+        filters,
+        extractedTags,
+      };
+    }),
 });
