@@ -57,13 +57,13 @@ export function ResultsArea({ listingType }: ResultsAreaProps) {
     <div className="w-full space-y-6">
       {/* Sort Options */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-600">
+        <div className="text-sm text-gray-600">
           {isLoading ? (
             <Skeleton className="h-4 w-32" />
           ) : (
             `${data?.total ?? 0} properties found`
           )}
-        </p>
+        </div>
         <div className="flex items-center gap-2">
           <label htmlFor="sort-select" className="text-sm text-gray-600">
             Sort by:
