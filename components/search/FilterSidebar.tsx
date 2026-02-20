@@ -79,14 +79,14 @@ export function FilterSidebar() {
         </CardHeader>
         <CardContent>
           <Select
-            value={filters.propertyType ?? ''}
-            onValueChange={(val) => setFilter('propertyType', val || undefined)}
+            value={filters.propertyType ?? undefined}
+            onValueChange={(val) => setFilter('propertyType', val === 'clear' ? undefined : val)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Any" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any</SelectItem>
+              <SelectItem value="clear">Any</SelectItem>
               <SelectItem value={PropertyType.HDB}>HDB</SelectItem>
               <SelectItem value={PropertyType.Condo}>Condo</SelectItem>
               <SelectItem value={PropertyType.Landed}>Landed</SelectItem>
@@ -186,14 +186,14 @@ export function FilterSidebar() {
         </CardHeader>
         <CardContent>
           <Select
-            value={filters.furnishing ?? ''}
-            onValueChange={(val) => setFilter('furnishing', val || undefined)}
+            value={filters.furnishing ?? undefined}
+            onValueChange={(val) => setFilter('furnishing', val === 'clear' ? undefined : val)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Any" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any</SelectItem>
+              <SelectItem value="clear">Any</SelectItem>
               <SelectItem value={Furnishing.Unfurnished}>Unfurnished</SelectItem>
               <SelectItem value={Furnishing.PartialFurnished}>Partially Furnished</SelectItem>
               <SelectItem value={Furnishing.FullyFurnished}>Fully Furnished</SelectItem>
@@ -209,14 +209,14 @@ export function FilterSidebar() {
         </CardHeader>
         <CardContent>
           <Select
-            value={filters.tenure ?? ''}
-            onValueChange={(val) => setFilter('tenure', val || undefined)}
+            value={filters.tenure ?? undefined}
+            onValueChange={(val) => setFilter('tenure', val === 'clear' ? undefined : val)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Any" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any</SelectItem>
+              <SelectItem value="clear">Any</SelectItem>
               <SelectItem value={Tenure.Freehold}>Freehold</SelectItem>
               <SelectItem value={Tenure.Leasehold99}>99-year Leasehold</SelectItem>
               <SelectItem value={Tenure.Leasehold999}>999-year Leasehold</SelectItem>
@@ -234,14 +234,14 @@ export function FilterSidebar() {
         </CardHeader>
         <CardContent>
           <Select
-            value={filters.verificationLevel ?? ''}
-            onValueChange={(val) => setFilter('verificationLevel', val || undefined)}
+            value={filters.verificationLevel ?? undefined}
+            onValueChange={(val) => setFilter('verificationLevel', val === 'clear' ? undefined : val)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Any" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any</SelectItem>
+              <SelectItem value="clear">Any</SelectItem>
               <SelectItem value={VerificationLevel.FullyVerified}>Fully Verified</SelectItem>
               <SelectItem value={VerificationLevel.LegalDocsVerified}>Docs Verified</SelectItem>
               <SelectItem value={VerificationLevel.OwnershipVerified}>Owner Verified</SelectItem>
@@ -257,14 +257,14 @@ export function FilterSidebar() {
         </CardHeader>
         <CardContent>
           <Select
-            value={filters.listingSource ?? ''}
-            onValueChange={(val) => setFilter('listingSource', val || undefined)}
+            value={filters.listingSource ?? undefined}
+            onValueChange={(val) => setFilter('listingSource', val === 'clear' ? undefined : val)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Any" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any</SelectItem>
+              <SelectItem value="clear">Any</SelectItem>
               <SelectItem value={ListingSource.OwnerDirect}>Owner Direct</SelectItem>
               <SelectItem value={ListingSource.Agent}>Agent Listed</SelectItem>
             </SelectContent>
