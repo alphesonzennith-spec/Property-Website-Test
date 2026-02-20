@@ -286,7 +286,7 @@ export const propertiesRouter = router({
   /** Parse natural language query into structured filters (MOCK implementation). */
   parseNaturalLanguageQuery: publicProcedure
     .input(z.object({ query: z.string() }))
-    .query(async ({ input }) => {
+    .mutation(async ({ input }) => {
       // MOCK: Replace with actual AI/NLP service when ready
       // TODO: Document in claude.md - integrate with AI service for production
       await new Promise((r) => setTimeout(r, 250));
