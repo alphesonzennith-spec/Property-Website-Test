@@ -21,6 +21,8 @@ import { Button } from '@/components/ui/button';
 export default function TdsrMsrCalculatorPage() {
   // Fetch borrowing config from regulatory rates
   const { data: borrowingConfig, isLoading, error, refetch } = useRegulatorySection('borrowing');
+  // Fetch mortgage config for stress test rate
+  const { data: mortgageConfig } = useRegulatorySection('mortgage');
 
   // Tab state
   const [activeTab, setActiveTab] = useState<'tdsr' | 'msr'>('tdsr');
@@ -52,10 +54,10 @@ export default function TdsrMsrCalculatorPage() {
 
   // Initialize stress test rate from config
   React.useEffect(() => {
-    if (borrowingConfig?.mortgage?.bankLoan?.typicalInterestRangePct?.max) {
-      setStressTestRate(borrowingConfig.mortgage.bankLoan.typicalInterestRangePct.max);
+    if (mortgageConfig && 'bankLoan' in mortgageConfig && mortgageConfig.bankLoan?.typicalInterestRangePct?.max) {
+      setStressTestRate(mortgageConfig.bankLoan.typicalInterestRangePct.max);
     }
-  }, [borrowingConfig]);
+  }, [mortgageConfig]);
 
   // Calculate total incomes (single or joint)
   const totalFixedIncome = applicantMode === 'joint'
@@ -71,16 +73,16 @@ export default function TdsrMsrCalculatorPage() {
 
   // TDSR Calculation
   const tdsrResult = useMemo(() => {
-    if (!borrowingConfig) return null;
+    if (!borrowingConfig || !('tdsr' in borrowingConfig)) return null;
 
     const grossMonthlyIncome = totalFixedIncome + totalVariableIncome;
     if (grossMonthlyIncome === 0) return null;
 
     const input: TDSRInput = {
-      grossMonthlyIncome,
+      fixedMonthlyIncome: totalFixedIncome,
+      variableMonthlyIncome: totalVariableIncome,
       existingMonthlyDebts: totalMonthlyDebts,
-      proposedMortgageRepayment: 0, // Will calculate max loan first
-      hasVariableIncome: totalVariableIncome > 0,
+      proposedMortgageRepayment: 0,
     };
 
     return calculateTDSR(input, borrowingConfig.tdsr);
@@ -88,7 +90,7 @@ export default function TdsrMsrCalculatorPage() {
 
   // Max Loan Calculation (TDSR)
   const maxLoanTDSR = useMemo(() => {
-    if (!borrowingConfig || !tdsrResult) return null;
+    if (!borrowingConfig || !('tdsr' in borrowingConfig) || !tdsrResult) return null;
 
     const grossMonthlyIncome = totalFixedIncome + totalVariableIncome;
     if (grossMonthlyIncome === 0) return null;
@@ -109,7 +111,7 @@ export default function TdsrMsrCalculatorPage() {
 
   // MSR Calculation
   const msrResult = useMemo(() => {
-    if (!borrowingConfig || msrIncome === 0) return null;
+    if (!borrowingConfig || !('msr' in borrowingConfig) || msrIncome === 0) return null;
 
     const input: MSRInput = {
       grossMonthlyIncome: msrIncome,
@@ -121,7 +123,7 @@ export default function TdsrMsrCalculatorPage() {
 
   // Max Loan Calculation (MSR)
   const maxLoanMSR = useMemo(() => {
-    if (!borrowingConfig || msrIncome === 0) return null;
+    if (!borrowingConfig || !('tdsr' in borrowingConfig) || msrIncome === 0) return null;
 
     return getMaxLoanAmount(
       msrIncome,
