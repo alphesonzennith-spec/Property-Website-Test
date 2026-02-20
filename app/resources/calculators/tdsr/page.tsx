@@ -662,6 +662,72 @@ export default function TdsrMsrCalculatorPage() {
           </TabsContent>
         </Tabs>
 
+        {/* Purchasing Power Box */}
+        {((activeTab === 'tdsr' && maxLoanTDSR) || (activeTab === 'msr' && maxLoanMSR)) && (
+          <Card className="mt-8 border-2 border-emerald-500 bg-emerald-50/50">
+            <CardHeader>
+              <CardTitle className="text-xl text-emerald-800">
+                Your Maximum Purchasing Power
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {activeTab === 'tdsr' && maxLoanTDSR ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                      <p className="text-sm text-emerald-700 font-medium">Max Loan Amount</p>
+                      <p className="text-2xl font-bold text-emerald-900">
+                        {formatCurrency(maxLoanTDSR.maxLoan)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-emerald-700 font-medium">Estimated Down Payment (25%)</p>
+                      <p className="text-2xl font-bold text-emerald-900">
+                        {formatCurrency(maxLoanTDSR.maxLoan / 3)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-emerald-700 font-medium">Maximum Property Price (75% LTV)</p>
+                      <p className="text-3xl font-extrabold text-emerald-600">
+                        {formatCurrency(maxLoanTDSR.maxLoan / 0.75)}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-emerald-700 mt-4">
+                    Based on current LTV of 75% for private properties
+                  </p>
+                </div>
+              ) : activeTab === 'msr' && maxLoanMSR ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                      <p className="text-sm text-emerald-700 font-medium">Max Loan Amount</p>
+                      <p className="text-2xl font-bold text-emerald-900">
+                        {formatCurrency(maxLoanMSR.maxLoan)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-emerald-700 font-medium">Estimated Down Payment (15%)</p>
+                      <p className="text-2xl font-bold text-emerald-900">
+                        {formatCurrency(maxLoanMSR.maxLoan / 5.67)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-emerald-700 font-medium">Maximum Property Price (85% LTV)</p>
+                      <p className="text-3xl font-extrabold text-emerald-600">
+                        {formatCurrency(maxLoanMSR.maxLoan / 0.85)}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-emerald-700 mt-4">
+                    Based on current LTV of 85% for HDB properties
+                  </p>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Footer */}
         {borrowingConfig && 'tdsr' in borrowingConfig && (
           <div className="mt-12 text-center text-xs text-gray-400">
