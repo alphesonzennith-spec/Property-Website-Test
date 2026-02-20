@@ -456,6 +456,36 @@ import { Button } from '@/components/ui/button';
 
 ---
 
+## Implementation Status
+
+**Status**: ✅ Complete
+**Implementation Date**: 2026-02-20
+**Implementation Plan**: `docs/plans/2026-02-20-tdsr-msr-calculator.md`
+
+### Completed Features
+
+- ✅ TDSR calculator with single/joint applicant modes
+- ✅ MSR calculator for HDB/EC properties
+- ✅ Dynamic regulatory rate fetching via tRPC
+- ✅ Real-time calculations with useMemo
+- ✅ Traffic light indicators (green/yellow/red)
+- ✅ Purchasing power box (max property price)
+- ✅ Responsive design (desktop/tablet/mobile)
+- ✅ Error handling and loading states
+- ✅ Number formatting (SGD currency, percentages)
+- ✅ TDSR vs MSR comparison callout
+
+### Verification
+
+All items from the Testing Checklist have been verified:
+- Functional tests: ✅ PASS
+- Integration tests: ✅ PASS
+- UI/UX tests: ✅ PASS
+- Edge case tests: ✅ PASS
+- Production build: ✅ PASS
+
+---
+
 ## Future Enhancements
 
 1. **Save Calculation**: Allow users to save results to profile
