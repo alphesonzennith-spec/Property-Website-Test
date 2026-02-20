@@ -212,9 +212,9 @@ export default function TdsrMsrCalculatorPage() {
 
         <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as 'tdsr' | 'msr')}>
           <TabsList className="mb-8">
-            <TabsTrigger value="tdsr">TDSR Calculator</TabsTrigger>
+            <TabsTrigger value="tdsr">TDSR</TabsTrigger>
             <TabsTrigger value="msr">
-              MSR Calculator
+              MSR
               <Badge variant="outline" className="ml-2 text-xs">For HDB/EC only</Badge>
             </TabsTrigger>
           </TabsList>
@@ -250,12 +250,12 @@ export default function TdsrMsrCalculatorPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">
-                      {applicantMode === 'joint' ? 'Monthly Income (Applicant 1)' : 'Monthly Income'}
+                      Monthly Income {applicantMode === 'joint' ? '(Applicant 1)' : ''}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
-                      <Label htmlFor="fixedIncome">Fixed Monthly Income (S$)</Label>
+                      <Label htmlFor="fixedIncome">Fixed Monthly Income (SGD)</Label>
                       <Input
                         id="fixedIncome"
                         type="number"
@@ -265,7 +265,7 @@ export default function TdsrMsrCalculatorPage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="variableIncome">Variable Income (S$/month)</Label>
+                      <Label htmlFor="variableIncome">Variable Monthly Income (SGD)</Label>
                       <Input
                         id="variableIncome"
                         type="number"
@@ -291,7 +291,7 @@ export default function TdsrMsrCalculatorPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
-                        <Label htmlFor="fixedIncome2">Fixed Monthly Income (S$)</Label>
+                        <Label htmlFor="fixedIncome2">Fixed Monthly Income (SGD)</Label>
                         <Input
                           id="fixedIncome2"
                           type="number"
@@ -301,7 +301,7 @@ export default function TdsrMsrCalculatorPage() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="variableIncome2">Variable Income (S$/month)</Label>
+                        <Label htmlFor="variableIncome2">Variable Monthly Income (SGD)</Label>
                         <Input
                           id="variableIncome2"
                           type="number"
@@ -407,7 +407,7 @@ export default function TdsrMsrCalculatorPage() {
               </div>
 
               {/* Right Column: Results */}
-              <div>
+              <div className="space-y-6">
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">TDSR Results</CardTitle>
@@ -417,7 +417,7 @@ export default function TdsrMsrCalculatorPage() {
                       <>
                         <div>
                           <p className="text-sm text-gray-500">Effective Monthly Income</p>
-                          <p className="text-2xl font-bold">{formatCurrency(effectiveMonthlyIncome)}</p>
+                          <p className="text-xl font-bold">{formatCurrency(effectiveMonthlyIncome)}</p>
                           {borrowingConfig && 'tdsr' in borrowingConfig && (
                             <p className="text-xs text-gray-400">
                               After {borrowingConfig.tdsr.variableIncomeHaircutPct}% haircut on variable income
@@ -430,7 +430,7 @@ export default function TdsrMsrCalculatorPage() {
                             <p className="text-sm text-gray-500">
                               TDSR Limit ({formatPercentage(borrowingConfig.tdsr.limit)})
                             </p>
-                            <p className="text-2xl font-bold">
+                            <p className="text-xl font-bold">
                               {formatCurrency(effectiveMonthlyIncome * borrowingConfig.tdsr.limit)}
                             </p>
                           </div>
@@ -438,19 +438,19 @@ export default function TdsrMsrCalculatorPage() {
 
                         <div>
                           <p className="text-sm text-gray-500">Current Obligations</p>
-                          <p className="text-2xl font-bold">{formatCurrency(totalMonthlyDebts)}</p>
+                          <p className="text-xl font-bold">{formatCurrency(totalMonthlyDebts)}</p>
                         </div>
 
                         <div>
                           <p className="text-sm text-gray-500">Available for Mortgage</p>
-                          <p className="text-2xl font-bold text-emerald-600">
+                          <p className="text-xl font-bold text-emerald-600">
                             {formatCurrency(Math.max(0, tdsrResult.remainingCapacitySGD))}
                           </p>
                         </div>
 
                         <div className="pt-4 border-t">
-                          <p className="text-sm text-gray-500">Maximum Loan Amount</p>
-                          <p className="text-3xl font-bold text-emerald-600">
+                          <p className="text-sm text-gray-500">Maximum Loan You Qualify For</p>
+                          <p className="text-3xl font-extrabold text-emerald-600">
                             {maxLoanTDSR ? formatCurrency(maxLoanTDSR.maxLoan) : 'N/A'}
                           </p>
                         </div>
@@ -482,9 +482,9 @@ export default function TdsrMsrCalculatorPage() {
                         )}
                       </>
                     ) : (
-                      <div className="text-center py-12">
-                        <p className="text-gray-400">Please enter your monthly income to calculate TDSR</p>
-                      </div>
+                      <p className="text-gray-400 text-center py-8">
+                        Please enter your monthly income to calculate TDSR
+                      </p>
                     )}
                   </CardContent>
                 </Card>
@@ -495,7 +495,7 @@ export default function TdsrMsrCalculatorPage() {
           {/* MSR Tab */}
           <TabsContent value="msr" className="mt-6">
             <Card>
-              <CardContent className="py-12">
+              <CardContent className="py-20">
                 <div className="text-center text-gray-400">
                   <p>MSR tab coming next</p>
                 </div>
