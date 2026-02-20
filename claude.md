@@ -188,6 +188,80 @@ if (input.ownerSingpassVerified !== undefined) {
 
 ---
 
+### Mistake: Using empty string values in Select components
+
+**Issue:** Shadcn Select component throws error: "A <Select.Item /> must have a value prop that is not an empty string"
+
+**Why it happens:** The Select component reserves empty string for clearing the selection internally, so you can't use it as a value.
+
+**Incorrect:**
+```typescript
+<Select value={filters.propertyType ?? ''}>
+  <SelectItem value="">Any</SelectItem>  // ❌ Empty string not allowed
+  <SelectItem value="HDB">HDB</SelectItem>
+</Select>
+```
+
+**Correct solution:**
+```typescript
+<Select
+  value={filters.propertyType ?? undefined}
+  onValueChange={(val) => setFilter('propertyType', val === 'clear' ? undefined : val)}
+>
+  <SelectItem value="clear">Any</SelectItem>  // ✅ Use special value
+  <SelectItem value="HDB">HDB</SelectItem>
+</Select>
+```
+
+**Where it matters:**
+- `components/search/FilterSidebar.tsx`
+- Any component using Select with optional/clearable values
+- Always use a special value like `'clear'` or `'none'` instead of empty string
+
+**Additional notes:**
+- The placeholder prop on SelectValue will show when value is undefined
+- When user selects "Any", set the filter to undefined to clear it
+- This also ensures proper hydration without errors
+
+---
+
+### Mistake: Nesting block elements inside <p> tags
+
+**Issue:** React throws hydration error: "In HTML, <div> cannot be a descendant of <p>"
+
+**Why it happens:** The `<p>` tag can only contain inline elements (text, spans, etc.), not block elements like `<div>`.
+
+**Common cause:** Using components that render divs (like Skeleton) inside paragraph tags
+
+**Incorrect:**
+```typescript
+<p className="text-sm text-gray-600">
+  {isLoading ? (
+    <Skeleton className="h-4 w-32" />  // ❌ Skeleton renders a <div>
+  ) : (
+    `${data?.total ?? 0} properties found`
+  )}
+</p>
+```
+
+**Correct solution:**
+```typescript
+<div className="text-sm text-gray-600">  // ✅ Use div instead of p
+  {isLoading ? (
+    <Skeleton className="h-4 w-32" />
+  ) : (
+    `${data?.total ?? 0} properties found`
+  )}
+</div>
+```
+
+**Where it matters:**
+- `components/search/ResultsArea.tsx`
+- Any component mixing text content with shadcn components (Skeleton, Alert, Card, etc.)
+- Use `<div>` with text styling classes instead of `<p>` when children might include block elements
+
+---
+
 ## Architecture Decisions
 
 ### Why Zustand instead of React Context?
