@@ -515,14 +515,151 @@ export default function TdsrMsrCalculatorPage() {
           </TabsContent>
 
           {/* MSR Tab */}
-          <TabsContent value="msr" className="mt-6">
-            <Card>
-              <CardContent className="py-20">
-                <div className="text-center text-gray-400">
-                  <p>MSR tab coming next</p>
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value="msr" className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Left Column: Inputs */}
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">MSR Calculator</CardTitle>
+                    <p className="text-sm text-gray-500">For HDB and EC properties only</p>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="msrIncome">Gross Monthly Income (SGD)</Label>
+                      <Input
+                        id="msrIncome"
+                        type="number"
+                        min="0"
+                        max="1000000"
+                        placeholder="0"
+                        value={msrIncome || ''}
+                        onChange={(e) => setMsrIncome(Number(e.target.value))}
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Property Type</Label>
+                      <RadioGroup
+                        value={msrPropertyType}
+                        onValueChange={(val) => setMsrPropertyType(val as PropertyType)}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value={PropertyType.HDB} id="hdb" />
+                          <Label htmlFor="hdb">HDB</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value={PropertyType.EC} id="ec" />
+                          <Label htmlFor="ec">Executive Condominium (EC)</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="msrProposedMortgage">Proposed Monthly Mortgage (SGD)</Label>
+                      <Input
+                        id="msrProposedMortgage"
+                        type="number"
+                        min="0"
+                        max="500000"
+                        placeholder="0"
+                        value={msrProposedMortgage || ''}
+                        onChange={(e) => setMsrProposedMortgage(Number(e.target.value))}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Right Column: Results */}
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">MSR Results</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {msrResult ? (
+                      <>
+                        {borrowingConfig && 'msr' in borrowingConfig && (
+                          <div>
+                            <p className="text-sm text-gray-500">
+                              MSR Limit ({formatPercentage(borrowingConfig.msr.limit)})
+                            </p>
+                            <p className="text-xl font-bold">
+                              {formatCurrency(msrResult.grossMonthlyIncome * borrowingConfig.msr.limit)}/month
+                            </p>
+                          </div>
+                        )}
+
+                        <div>
+                          <p className="text-sm text-gray-500">Your Proposed Mortgage</p>
+                          <p className="text-xl font-bold">{formatCurrency(msrProposedMortgage)}/month</p>
+                          <p className="text-xs text-gray-400">
+                            MSR ratio: {formatPercentage(msrResult.msrRatio)}
+                          </p>
+                        </div>
+
+                        {maxLoanMSR && (
+                          <>
+                            <div className="pt-4 border-t">
+                              <p className="text-sm text-gray-500">Maximum HDB/EC Loan You Qualify For</p>
+                              <p className="text-3xl font-extrabold text-emerald-600">
+                                {formatCurrency(maxLoanMSR.maxLoan)}
+                              </p>
+                            </div>
+
+                            <div>
+                              <p className="text-sm text-gray-500">Maximum Property Price (at 75% LTV)</p>
+                              <p className="text-2xl font-bold">
+                                {formatCurrency(maxLoanMSR.maxLoan / 0.75)}
+                              </p>
+                            </div>
+                          </>
+                        )}
+
+                        {/* MSR Status Indicator */}
+                        {borrowingConfig && 'msr' in borrowingConfig && (
+                          <Alert className={
+                            msrResult.msrRatio <= borrowingConfig.msr.limit
+                              ? 'bg-green-50 border-green-200'
+                              : 'bg-red-50 border-red-200'
+                          }>
+                            <AlertTitle className="flex items-center gap-2">
+                              <span className="text-2xl">
+                                {msrResult.msrRatio <= borrowingConfig.msr.limit ? '🟢' : '🔴'}
+                              </span>
+                              {msrResult.msrRatio <= borrowingConfig.msr.limit
+                                ? 'Within MSR limit'
+                                : 'Exceeds MSR limit - Loan will be rejected'}
+                            </AlertTitle>
+                            <AlertDescription>
+                              Your MSR ratio: {formatPercentage(msrResult.msrRatio)}
+                            </AlertDescription>
+                          </Alert>
+                        )}
+
+                        {/* Comparison with TDSR */}
+                        {borrowingConfig && 'tdsr' in borrowingConfig && 'msr' in borrowingConfig && (
+                          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p className="text-sm font-semibold text-blue-900 mb-2">MSR vs TDSR Comparison</p>
+                            <p className="text-xs text-blue-700">
+                              MSR allows up to {formatPercentage(borrowingConfig.msr.limit)} of income for mortgage only,
+                              while TDSR allows {formatPercentage(borrowingConfig.tdsr.limit)} for all debts.
+                              For HDB/EC: {formatCurrency(msrIncome * borrowingConfig.msr.limit)} (MSR) vs{' '}
+                              {formatCurrency(msrIncome * borrowingConfig.tdsr.limit)} (TDSR).
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-gray-400 text-center py-8">
+                        Please enter your monthly income to calculate MSR
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
 
