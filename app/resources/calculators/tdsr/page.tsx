@@ -542,7 +542,7 @@ export default function TdsrMsrCalculatorPage() {
                       <Label>Property Type</Label>
                       <RadioGroup
                         value={msrPropertyType}
-                        onValueChange={(val) => setMsrPropertyType(val as PropertyType)}
+                        onValueChange={(v) => setMsrPropertyType(v as PropertyType)}
                       >
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value={PropertyType.HDB} id="hdb" />
@@ -556,9 +556,9 @@ export default function TdsrMsrCalculatorPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="msrProposedMortgage">Proposed Monthly Mortgage (SGD)</Label>
+                      <Label htmlFor="msrMortgage">Proposed Monthly Mortgage (SGD)</Label>
                       <Input
-                        id="msrProposedMortgage"
+                        id="msrMortgage"
                         type="number"
                         min="0"
                         max="500000"
@@ -586,7 +586,7 @@ export default function TdsrMsrCalculatorPage() {
                               MSR Limit ({formatPercentage(borrowingConfig.msr.limit)})
                             </p>
                             <p className="text-xl font-bold">
-                              {formatCurrency(msrResult.grossMonthlyIncome * borrowingConfig.msr.limit)}/month
+                              {formatCurrency(msrResult.maxAllowedRepaymentSGD)}/month
                             </p>
                           </div>
                         )}
@@ -595,26 +595,17 @@ export default function TdsrMsrCalculatorPage() {
                           <p className="text-sm text-gray-500">Your Proposed Mortgage</p>
                           <p className="text-xl font-bold">{formatCurrency(msrProposedMortgage)}/month</p>
                           <p className="text-xs text-gray-400">
-                            MSR ratio: {formatPercentage(msrResult.msrRatio)}
+                            MSR Ratio: {formatPercentage(msrResult.msrRatio)}
                           </p>
                         </div>
 
                         {maxLoanMSR && (
-                          <>
-                            <div className="pt-4 border-t">
-                              <p className="text-sm text-gray-500">Maximum HDB/EC Loan You Qualify For</p>
-                              <p className="text-3xl font-extrabold text-emerald-600">
-                                {formatCurrency(maxLoanMSR.maxLoan)}
-                              </p>
-                            </div>
-
-                            <div>
-                              <p className="text-sm text-gray-500">Maximum Property Price (at 75% LTV)</p>
-                              <p className="text-2xl font-bold">
-                                {formatCurrency(maxLoanMSR.maxLoan / 0.75)}
-                              </p>
-                            </div>
-                          </>
+                          <div className="pt-4 border-t">
+                            <p className="text-sm text-gray-500">Maximum HDB/EC Loan</p>
+                            <p className="text-3xl font-extrabold text-emerald-600">
+                              {formatCurrency(maxLoanMSR.maxLoan)}
+                            </p>
+                          </div>
                         )}
 
                         {/* MSR Status Indicator */}
@@ -629,26 +620,34 @@ export default function TdsrMsrCalculatorPage() {
                                 {msrResult.msrRatio <= borrowingConfig.msr.limit ? '🟢' : '🔴'}
                               </span>
                               {msrResult.msrRatio <= borrowingConfig.msr.limit
-                                ? 'Within MSR limit'
-                                : 'Exceeds MSR limit - Loan will be rejected'}
+                                ? 'Within MSR Limit'
+                                : 'Exceeds MSR Limit'}
                             </AlertTitle>
                             <AlertDescription>
-                              Your MSR ratio: {formatPercentage(msrResult.msrRatio)}
+                              {msrResult.msrRatio <= borrowingConfig.msr.limit
+                                ? `Your proposed mortgage is within the ${formatPercentage(borrowingConfig.msr.limit)} MSR limit`
+                                : `Your proposed mortgage exceeds the ${formatPercentage(borrowingConfig.msr.limit)} MSR limit. Reduce the loan amount or increase your income.`
+                              }
                             </AlertDescription>
                           </Alert>
                         )}
 
                         {/* Comparison with TDSR */}
-                        {borrowingConfig && 'tdsr' in borrowingConfig && 'msr' in borrowingConfig && (
-                          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                            <p className="text-sm font-semibold text-blue-900 mb-2">MSR vs TDSR Comparison</p>
-                            <p className="text-xs text-blue-700">
-                              MSR allows up to {formatPercentage(borrowingConfig.msr.limit)} of income for mortgage only,
-                              while TDSR allows {formatPercentage(borrowingConfig.tdsr.limit)} for all debts.
-                              For HDB/EC: {formatCurrency(msrIncome * borrowingConfig.msr.limit)} (MSR) vs{' '}
-                              {formatCurrency(msrIncome * borrowingConfig.tdsr.limit)} (TDSR).
-                            </p>
-                          </div>
+                        {maxLoanMSR && borrowingConfig && 'tdsr' in borrowingConfig && (
+                          <Alert>
+                            <AlertTitle>Comparison: MSR vs TDSR</AlertTitle>
+                            <AlertDescription className="space-y-2">
+                              <p>
+                                For <strong>private property (TDSR)</strong>, your limit would be approximately{' '}
+                                <strong>{formatCurrency(msrIncome * borrowingConfig.tdsr.limit)}/month</strong>
+                              </p>
+                              <p>
+                                HDB's <strong>MSR rule</strong> limits you to{' '}
+                                <strong>{formatCurrency(msrResult.maxAllowedRepaymentSGD)}/month</strong> —{' '}
+                                <strong>{formatCurrency(msrIncome * borrowingConfig.tdsr.limit - msrResult.maxAllowedRepaymentSGD)}</strong> less
+                              </p>
+                            </AlertDescription>
+                          </Alert>
                         )}
                       </>
                     ) : (
