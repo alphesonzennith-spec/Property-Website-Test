@@ -259,7 +259,9 @@ export default function TdsrMsrCalculatorPage() {
                       <Input
                         id="fixedIncome"
                         type="number"
-                        placeholder="e.g., 8000"
+                        min="0"
+                        max="1000000"
+                        placeholder="0"
                         value={fixedIncome || ''}
                         onChange={(e) => setFixedIncome(Number(e.target.value))}
                       />
@@ -269,7 +271,9 @@ export default function TdsrMsrCalculatorPage() {
                       <Input
                         id="variableIncome"
                         type="number"
-                        placeholder="e.g., 2000"
+                        min="0"
+                        max="1000000"
+                        placeholder="0"
                         value={variableIncome || ''}
                         onChange={(e) => setVariableIncome(Number(e.target.value))}
                       />
@@ -295,7 +299,9 @@ export default function TdsrMsrCalculatorPage() {
                         <Input
                           id="fixedIncome2"
                           type="number"
-                          placeholder="e.g., 6000"
+                          min="0"
+                          max="1000000"
+                          placeholder="0"
                           value={fixedIncome2 || ''}
                           onChange={(e) => setFixedIncome2(Number(e.target.value))}
                         />
@@ -305,7 +311,9 @@ export default function TdsrMsrCalculatorPage() {
                         <Input
                           id="variableIncome2"
                           type="number"
-                          placeholder="e.g., 1000"
+                          min="0"
+                          max="1000000"
+                          placeholder="0"
                           value={variableIncome2 || ''}
                           onChange={(e) => setVariableIncome2(Number(e.target.value))}
                         />
@@ -325,7 +333,9 @@ export default function TdsrMsrCalculatorPage() {
                       <Input
                         id="creditCardDebts"
                         type="number"
-                        placeholder="e.g., 200"
+                        min="0"
+                        max="500000"
+                        placeholder="0"
                         value={creditCardDebts || ''}
                         onChange={(e) => setCreditCardDebts(Number(e.target.value))}
                       />
@@ -335,7 +345,9 @@ export default function TdsrMsrCalculatorPage() {
                       <Input
                         id="carLoan"
                         type="number"
-                        placeholder="e.g., 500"
+                        min="0"
+                        max="500000"
+                        placeholder="0"
                         value={carLoan || ''}
                         onChange={(e) => setCarLoan(Number(e.target.value))}
                       />
@@ -345,7 +357,9 @@ export default function TdsrMsrCalculatorPage() {
                       <Input
                         id="otherHomeLoans"
                         type="number"
-                        placeholder="e.g., 0"
+                        min="0"
+                        max="500000"
+                        placeholder="0"
                         value={otherHomeLoans || ''}
                         onChange={(e) => setOtherHomeLoans(Number(e.target.value))}
                       />
@@ -355,12 +369,14 @@ export default function TdsrMsrCalculatorPage() {
                       <Input
                         id="otherLoans"
                         type="number"
-                        placeholder="e.g., 0"
+                        min="0"
+                        max="500000"
+                        placeholder="0"
                         value={otherLoans || ''}
                         onChange={(e) => setOtherLoans(Number(e.target.value))}
                       />
                     </div>
-                    <div className="pt-2 border-t">
+                    <div className="pt-4 border-t">
                       <p className="text-sm font-semibold text-emerald-600">
                         Total monthly obligations: {formatCurrency(totalMonthlyDebts)}
                       </p>
@@ -379,8 +395,10 @@ export default function TdsrMsrCalculatorPage() {
                       <Input
                         id="stressTestRate"
                         type="number"
+                        min="1"
+                        max="15"
                         step="0.1"
-                        placeholder="e.g., 4.5"
+                        placeholder="0"
                         value={stressTestRate || ''}
                         onChange={(e) => setStressTestRate(Number(e.target.value))}
                       />
@@ -417,10 +435,10 @@ export default function TdsrMsrCalculatorPage() {
                       <>
                         <div>
                           <p className="text-sm text-gray-500">Effective Monthly Income</p>
-                          <p className="text-xl font-bold">{formatCurrency(effectiveMonthlyIncome)}</p>
+                          <p className="text-2xl font-bold">{formatCurrency(tdsrResult.effectiveMonthlyIncome)}</p>
                           {borrowingConfig && 'tdsr' in borrowingConfig && (
                             <p className="text-xs text-gray-400">
-                              After {borrowingConfig.tdsr.variableIncomeHaircutPct}% haircut on variable income
+                              {formatCurrency(totalFixedIncome)} fixed + {formatCurrency(totalVariableIncome * (1 - borrowingConfig.tdsr.variableIncomeHaircutPct / 100))} variable (after haircut)
                             </p>
                           )}
                         </div>
@@ -431,36 +449,40 @@ export default function TdsrMsrCalculatorPage() {
                               TDSR Limit ({formatPercentage(borrowingConfig.tdsr.limit)})
                             </p>
                             <p className="text-xl font-bold">
-                              {formatCurrency(effectiveMonthlyIncome * borrowingConfig.tdsr.limit)}
+                              {formatCurrency(tdsrResult.effectiveMonthlyIncome * borrowingConfig.tdsr.limit)}/month
                             </p>
                           </div>
                         )}
 
                         <div>
                           <p className="text-sm text-gray-500">Current Obligations</p>
-                          <p className="text-xl font-bold">{formatCurrency(totalMonthlyDebts)}</p>
+                          <p className="text-xl font-bold">{formatCurrency(totalMonthlyDebts)}/month</p>
                         </div>
 
                         <div>
                           <p className="text-sm text-gray-500">Available for Mortgage</p>
                           <p className="text-xl font-bold text-emerald-600">
-                            {formatCurrency(Math.max(0, tdsrResult.remainingCapacitySGD))}
+                            {formatCurrency(Math.max(0, tdsrResult.remainingCapacitySGD))}/month
                           </p>
                         </div>
 
-                        <div className="pt-4 border-t">
-                          <p className="text-sm text-gray-500">Maximum Loan You Qualify For</p>
-                          <p className="text-3xl font-extrabold text-emerald-600">
-                            {maxLoanTDSR ? formatCurrency(maxLoanTDSR.maxLoan) : 'N/A'}
-                          </p>
-                        </div>
+                        {maxLoanTDSR && (
+                          <>
+                            <div className="pt-4 border-t">
+                              <p className="text-sm text-gray-500">Maximum Loan You Qualify For</p>
+                              <p className="text-3xl font-extrabold text-emerald-600">
+                                {formatCurrency(maxLoanTDSR.maxLoan)}
+                              </p>
+                            </div>
 
-                        <div>
-                          <p className="text-sm text-gray-500">Maximum Property Price (at 75% LTV)</p>
-                          <p className="text-2xl font-bold">
-                            {maxLoanTDSR ? formatCurrency(maxLoanTDSR.maxLoan / 0.75) : 'N/A'}
-                          </p>
-                        </div>
+                            <div>
+                              <p className="text-sm text-gray-500">Maximum Property Price (at 75% LTV)</p>
+                              <p className="text-2xl font-bold">
+                                {formatCurrency(maxLoanTDSR.maxLoan / 0.75)}
+                              </p>
+                            </div>
+                          </>
+                        )}
 
                         {/* Traffic Light Indicator */}
                         {trafficLightStatus && (
