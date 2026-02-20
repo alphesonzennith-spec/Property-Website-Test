@@ -71,6 +71,13 @@ export default function TdsrMsrCalculatorPage() {
   // Calculate total monthly debts
   const totalMonthlyDebts = creditCardDebts + carLoan + otherHomeLoans + otherLoans;
 
+  // Calculate effective income (apply haircut to variable portion)
+  const effectiveMonthlyIncome = useMemo(() => {
+    if (!borrowingConfig) return 0;
+    const haircutPct = borrowingConfig.tdsr.variableIncomeHaircutPct;
+    return totalFixedIncome + (totalVariableIncome * (1 - haircutPct / 100));
+  }, [borrowingConfig, totalFixedIncome, totalVariableIncome]);
+
   // TDSR Calculation
   const tdsrResult = useMemo(() => {
     if (!borrowingConfig || !('tdsr' in borrowingConfig)) return null;
@@ -90,13 +97,10 @@ export default function TdsrMsrCalculatorPage() {
 
   // Max Loan Calculation (TDSR)
   const maxLoanTDSR = useMemo(() => {
-    if (!borrowingConfig || !('tdsr' in borrowingConfig) || !tdsrResult) return null;
-
-    const grossMonthlyIncome = totalFixedIncome + totalVariableIncome;
-    if (grossMonthlyIncome === 0) return null;
+    if (!borrowingConfig || effectiveMonthlyIncome === 0) return null;
 
     return getMaxLoanAmount(
-      grossMonthlyIncome,
+      effectiveMonthlyIncome,  // Use effective income (after haircut)
       totalMonthlyDebts,
       PropertyType.Condo, // Default for TDSR
       stressTestRate,
@@ -107,7 +111,7 @@ export default function TdsrMsrCalculatorPage() {
         msrApplicablePropertyTypes: borrowingConfig.msr.applicablePropertyTypes,
       }
     );
-  }, [borrowingConfig, totalFixedIncome, totalVariableIncome, totalMonthlyDebts, stressTestRate, loanTenureYears, tdsrResult]);
+  }, [borrowingConfig, effectiveMonthlyIncome, totalMonthlyDebts, stressTestRate, loanTenureYears]);
 
   // MSR Calculation
   const msrResult = useMemo(() => {
