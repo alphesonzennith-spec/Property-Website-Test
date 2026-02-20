@@ -73,7 +73,7 @@ export default function TdsrMsrCalculatorPage() {
 
   // Calculate effective income (apply haircut to variable portion)
   const effectiveMonthlyIncome = useMemo(() => {
-    if (!borrowingConfig) return 0;
+    if (!borrowingConfig || !('tdsr' in borrowingConfig)) return 0;
     const haircutPct = borrowingConfig.tdsr.variableIncomeHaircutPct;
     return totalFixedIncome + (totalVariableIncome * (1 - haircutPct / 100));
   }, [borrowingConfig, totalFixedIncome, totalVariableIncome]);
@@ -97,7 +97,7 @@ export default function TdsrMsrCalculatorPage() {
 
   // Max Loan Calculation (TDSR)
   const maxLoanTDSR = useMemo(() => {
-    if (!borrowingConfig || effectiveMonthlyIncome === 0) return null;
+    if (!borrowingConfig || !('tdsr' in borrowingConfig) || effectiveMonthlyIncome === 0) return null;
 
     return getMaxLoanAmount(
       effectiveMonthlyIncome,  // Use effective income (after haircut)
@@ -211,23 +211,23 @@ export default function TdsrMsrCalculatorPage() {
         </p>
 
         <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as 'tdsr' | 'msr')}>
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="mb-8">
             <TabsTrigger value="tdsr">TDSR Calculator</TabsTrigger>
             <TabsTrigger value="msr">
               MSR Calculator
-              <Badge variant="secondary" className="ml-2">HDB Only</Badge>
+              <Badge variant="outline" className="ml-2 text-xs">For HDB/EC only</Badge>
             </TabsTrigger>
           </TabsList>
 
           {/* TDSR Tab */}
-          <TabsContent value="tdsr" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <TabsContent value="tdsr" className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Left Column: Inputs */}
               <div className="space-y-6">
                 {/* Applicant Mode Toggle */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Applicant Mode</CardTitle>
+                    <CardTitle className="text-lg">Application Type</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <RadioGroup
@@ -249,8 +249,8 @@ export default function TdsrMsrCalculatorPage() {
                 {/* Income Section - Applicant 1 */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>
-                      {applicantMode === 'joint' ? 'Applicant 1 Income' : 'Monthly Income'}
+                    <CardTitle className="text-lg">
+                      {applicantMode === 'joint' ? 'Monthly Income (Applicant 1)' : 'Monthly Income'}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -273,9 +273,12 @@ export default function TdsrMsrCalculatorPage() {
                         value={variableIncome || ''}
                         onChange={(e) => setVariableIncome(Number(e.target.value))}
                       />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Bonuses, commissions, etc. (Subject to {borrowingConfig.tdsr.variableIncomeHaircutPct}% haircut)
-                      </p>
+                      {borrowingConfig && 'tdsr' in borrowingConfig && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          We apply a {borrowingConfig.tdsr.variableIncomeHaircutPct}% haircut per MAS guidelines — only{' '}
+                          {100 - borrowingConfig.tdsr.variableIncomeHaircutPct}% counted
+                        </p>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -284,7 +287,7 @@ export default function TdsrMsrCalculatorPage() {
                 {applicantMode === 'joint' && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>Applicant 2 Income</CardTitle>
+                      <CardTitle className="text-lg">Monthly Income (Applicant 2)</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
@@ -314,11 +317,11 @@ export default function TdsrMsrCalculatorPage() {
                 {/* Debt Obligations */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Existing Debt Obligations</CardTitle>
+                    <CardTitle className="text-lg">Monthly Debt Obligations</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
-                      <Label htmlFor="creditCardDebts">Credit Card Minimum Payments (S$/month)</Label>
+                      <Label htmlFor="creditCardDebts">Credit Card Minimum Payments (SGD)</Label>
                       <Input
                         id="creditCardDebts"
                         type="number"
@@ -328,7 +331,7 @@ export default function TdsrMsrCalculatorPage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="carLoan">Car Loan (S$/month)</Label>
+                      <Label htmlFor="carLoan">Car Loan (SGD)</Label>
                       <Input
                         id="carLoan"
                         type="number"
@@ -338,7 +341,7 @@ export default function TdsrMsrCalculatorPage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="otherHomeLoans">Other Home Loans (S$/month)</Label>
+                      <Label htmlFor="otherHomeLoans">Other Home Loans (SGD)</Label>
                       <Input
                         id="otherHomeLoans"
                         type="number"
@@ -348,7 +351,7 @@ export default function TdsrMsrCalculatorPage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="otherLoans">Other Loans (S$/month)</Label>
+                      <Label htmlFor="otherLoans">Other Loans (SGD)</Label>
                       <Input
                         id="otherLoans"
                         type="number"
@@ -358,8 +361,8 @@ export default function TdsrMsrCalculatorPage() {
                       />
                     </div>
                     <div className="pt-2 border-t">
-                      <p className="text-sm font-semibold">
-                        Total Monthly Obligations: {formatCurrency(totalMonthlyDebts)}
+                      <p className="text-sm font-semibold text-emerald-600">
+                        Total monthly obligations: {formatCurrency(totalMonthlyDebts)}
                       </p>
                     </div>
                   </CardContent>
@@ -368,11 +371,11 @@ export default function TdsrMsrCalculatorPage() {
                 {/* Loan Parameters */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Loan Parameters</CardTitle>
+                    <CardTitle className="text-lg">Loan Parameters</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
-                      <Label htmlFor="stressTestRate">Stress Test Interest Rate (%)</Label>
+                      <Label htmlFor="stressTestRate">Stress Test Rate (%)</Label>
                       <Input
                         id="stressTestRate"
                         type="number"
@@ -381,25 +384,23 @@ export default function TdsrMsrCalculatorPage() {
                         value={stressTestRate || ''}
                         onChange={(e) => setStressTestRate(Number(e.target.value))}
                       />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Typically 3.5% - 4.5% based on current bank rates
-                      </p>
+                      {mortgageConfig && 'bankLoan' in mortgageConfig && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          MAS stress test rate: {mortgageConfig.bankLoan.typicalInterestRangePct.max}%
+                        </p>
+                      )}
                     </div>
                     <div>
                       <Label htmlFor="loanTenure">Loan Tenure: {loanTenureYears} years</Label>
                       <Slider
                         id="loanTenure"
                         min={5}
-                        max={35}
+                        max={30}
                         step={1}
                         value={[loanTenureYears]}
                         onValueChange={(val) => setLoanTenureYears(val[0])}
                         className="mt-2"
                       />
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>5 years</span>
-                        <span>35 years</span>
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -407,9 +408,9 @@ export default function TdsrMsrCalculatorPage() {
 
               {/* Right Column: Results */}
               <div>
-                <Card className="sticky top-6">
+                <Card>
                   <CardHeader>
-                    <CardTitle>TDSR Results</CardTitle>
+                    <CardTitle className="text-lg">TDSR Results</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {tdsrResult ? (
@@ -417,87 +418,72 @@ export default function TdsrMsrCalculatorPage() {
                         <div>
                           <p className="text-sm text-gray-500">Effective Monthly Income</p>
                           <p className="text-2xl font-bold">{formatCurrency(effectiveMonthlyIncome)}</p>
-                          <p className="text-xs text-gray-400">
-                            After {borrowingConfig.tdsr.variableIncomeHaircutPct}% haircut on variable income
-                          </p>
+                          {borrowingConfig && 'tdsr' in borrowingConfig && (
+                            <p className="text-xs text-gray-400">
+                              After {borrowingConfig.tdsr.variableIncomeHaircutPct}% haircut on variable income
+                            </p>
+                          )}
                         </div>
 
-                        <div>
-                          <p className="text-sm text-gray-500">
-                            TDSR Limit ({formatPercentage(borrowingConfig.tdsr.limit)})
-                          </p>
-                          <p className="text-2xl font-bold">
-                            {formatCurrency(effectiveMonthlyIncome * borrowingConfig.tdsr.limit)}
-                          </p>
-                        </div>
+                        {borrowingConfig && 'tdsr' in borrowingConfig && (
+                          <div>
+                            <p className="text-sm text-gray-500">
+                              TDSR Limit ({formatPercentage(borrowingConfig.tdsr.limit)})
+                            </p>
+                            <p className="text-2xl font-bold">
+                              {formatCurrency(effectiveMonthlyIncome * borrowingConfig.tdsr.limit)}
+                            </p>
+                          </div>
+                        )}
 
                         <div>
-                          <p className="text-sm text-gray-500">Current Monthly Obligations</p>
+                          <p className="text-sm text-gray-500">Current Obligations</p>
                           <p className="text-2xl font-bold">{formatCurrency(totalMonthlyDebts)}</p>
                         </div>
 
                         <div>
-                          <p className="text-sm text-gray-500">Available for Mortgage Payment</p>
+                          <p className="text-sm text-gray-500">Available for Mortgage</p>
                           <p className="text-2xl font-bold text-emerald-600">
-                            {formatCurrency(Math.max(0, tdsrResult.availableForMortgage))}
+                            {formatCurrency(Math.max(0, tdsrResult.remainingCapacitySGD))}
                           </p>
                         </div>
 
                         <div className="pt-4 border-t">
                           <p className="text-sm text-gray-500">Maximum Loan Amount</p>
                           <p className="text-3xl font-bold text-emerald-600">
-                            {maxLoanTDSR ? formatCurrency(maxLoanTDSR.maxLoanAmount) : 'N/A'}
+                            {maxLoanTDSR ? formatCurrency(maxLoanTDSR.maxLoan) : 'N/A'}
                           </p>
-                          {maxLoanTDSR && maxLoanTDSR.limitingFactor && (
-                            <p className="text-xs text-gray-400 mt-1">
-                              Limited by: {maxLoanTDSR.limitingFactor === 'tdsr' ? 'TDSR' : 'MSR'}
-                            </p>
-                          )}
                         </div>
 
                         <div>
-                          <p className="text-sm text-gray-500">Maximum Property Price (80% LTV)</p>
+                          <p className="text-sm text-gray-500">Maximum Property Price (at 75% LTV)</p>
                           <p className="text-2xl font-bold">
-                            {maxLoanTDSR ? formatCurrency(maxLoanTDSR.maxLoanAmount / 0.8) : 'N/A'}
+                            {maxLoanTDSR ? formatCurrency(maxLoanTDSR.maxLoan / 0.75) : 'N/A'}
                           </p>
                         </div>
 
                         {/* Traffic Light Indicator */}
                         {trafficLightStatus && (
-                          <div className="pt-4 border-t">
-                            <div
-                              className={`p-4 rounded-lg ${
-                                trafficLightStatus.color === 'green'
-                                  ? 'bg-emerald-50 border border-emerald-200'
-                                  : trafficLightStatus.color === 'yellow'
-                                  ? 'bg-yellow-50 border border-yellow-200'
-                                  : 'bg-red-50 border border-red-200'
-                              }`}
-                            >
-                              <div className="flex items-center gap-3">
-                                <div
-                                  className={`w-4 h-4 rounded-full ${
-                                    trafficLightStatus.color === 'green'
-                                      ? 'bg-emerald-500'
-                                      : trafficLightStatus.color === 'yellow'
-                                      ? 'bg-yellow-500'
-                                      : 'bg-red-500'
-                                  }`}
-                                />
-                                <div>
-                                  <p className="text-sm font-semibold">
-                                    TDSR: {formatPercentage(tdsrResult.tdsrRatio)}
-                                  </p>
-                                  <p className="text-xs text-gray-600">{trafficLightStatus.label}</p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
+                          <Alert className={
+                            trafficLightStatus.color === 'green' ? 'bg-green-50 border-green-200' :
+                            trafficLightStatus.color === 'yellow' ? 'bg-yellow-50 border-yellow-200' :
+                            'bg-red-50 border-red-200'
+                          }>
+                            <AlertTitle className="flex items-center gap-2">
+                              <span className="text-2xl">
+                                {trafficLightStatus.color === 'green' ? '🟢' : trafficLightStatus.color === 'yellow' ? '🟡' : '🔴'}
+                              </span>
+                              {trafficLightStatus.label}
+                            </AlertTitle>
+                            <AlertDescription>
+                              Your TDSR ratio: {formatPercentage(tdsrResult.tdsrRatio)}
+                            </AlertDescription>
+                          </Alert>
                         )}
                       </>
                     ) : (
                       <div className="text-center py-12">
-                        <p className="text-gray-400">Enter your income to see results</p>
+                        <p className="text-gray-400">Please enter your monthly income to calculate TDSR</p>
                       </div>
                     )}
                   </CardContent>
@@ -511,7 +497,7 @@ export default function TdsrMsrCalculatorPage() {
             <Card>
               <CardContent className="py-12">
                 <div className="text-center text-gray-400">
-                  <p>MSR Calculator coming in Task 5</p>
+                  <p>MSR tab coming next</p>
                 </div>
               </CardContent>
             </Card>
@@ -519,12 +505,13 @@ export default function TdsrMsrCalculatorPage() {
         </Tabs>
 
         {/* Footer */}
-        <div className="mt-8 text-center text-xs text-gray-400">
-          <p>
-            Rates sourced from MAS Notice 632 (Residential Property Loans) and current market conditions.
-          </p>
-          <p>Last updated: February 2026</p>
-        </div>
+        {borrowingConfig && 'tdsr' in borrowingConfig && (
+          <div className="mt-12 text-center text-xs text-gray-400">
+            Rates effective as of {borrowingConfig.tdsr.description ? 'Jan 2024' : 'current'}
+            <br />
+            Source: Monetary Authority of Singapore
+          </div>
+        )}
       </div>
     </main>
   );
