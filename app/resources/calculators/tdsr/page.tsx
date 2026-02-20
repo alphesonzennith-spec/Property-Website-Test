@@ -210,9 +210,320 @@ export default function TdsrMsrCalculatorPage() {
           Calculate your Total Debt Servicing Ratio and Mortgage Servicing Ratio
         </p>
 
-        {/* Tab structure will go here */}
-        <div className="text-center text-gray-400 py-20">
-          Config loaded successfully. Tabs coming next.
+        <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as 'tdsr' | 'msr')}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="tdsr">TDSR Calculator</TabsTrigger>
+            <TabsTrigger value="msr">
+              MSR Calculator
+              <Badge variant="secondary" className="ml-2">HDB Only</Badge>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* TDSR Tab */}
+          <TabsContent value="tdsr" className="mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Left Column: Inputs */}
+              <div className="space-y-6">
+                {/* Applicant Mode Toggle */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Applicant Mode</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <RadioGroup
+                      value={applicantMode}
+                      onValueChange={(val) => setApplicantMode(val as 'single' | 'joint')}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="single" id="single" />
+                        <Label htmlFor="single">Single Applicant</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="joint" id="joint" />
+                        <Label htmlFor="joint">Joint Applicants</Label>
+                      </div>
+                    </RadioGroup>
+                  </CardContent>
+                </Card>
+
+                {/* Income Section - Applicant 1 */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>
+                      {applicantMode === 'joint' ? 'Applicant 1 Income' : 'Monthly Income'}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="fixedIncome">Fixed Monthly Income (S$)</Label>
+                      <Input
+                        id="fixedIncome"
+                        type="number"
+                        placeholder="e.g., 8000"
+                        value={fixedIncome || ''}
+                        onChange={(e) => setFixedIncome(Number(e.target.value))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="variableIncome">Variable Income (S$/month)</Label>
+                      <Input
+                        id="variableIncome"
+                        type="number"
+                        placeholder="e.g., 2000"
+                        value={variableIncome || ''}
+                        onChange={(e) => setVariableIncome(Number(e.target.value))}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Bonuses, commissions, etc. (Subject to {borrowingConfig.tdsr.variableIncomeHaircutPct}% haircut)
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Joint Applicant Income */}
+                {applicantMode === 'joint' && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Applicant 2 Income</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label htmlFor="fixedIncome2">Fixed Monthly Income (S$)</Label>
+                        <Input
+                          id="fixedIncome2"
+                          type="number"
+                          placeholder="e.g., 6000"
+                          value={fixedIncome2 || ''}
+                          onChange={(e) => setFixedIncome2(Number(e.target.value))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="variableIncome2">Variable Income (S$/month)</Label>
+                        <Input
+                          id="variableIncome2"
+                          type="number"
+                          placeholder="e.g., 1000"
+                          value={variableIncome2 || ''}
+                          onChange={(e) => setVariableIncome2(Number(e.target.value))}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Debt Obligations */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Existing Debt Obligations</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="creditCardDebts">Credit Card Minimum Payments (S$/month)</Label>
+                      <Input
+                        id="creditCardDebts"
+                        type="number"
+                        placeholder="e.g., 200"
+                        value={creditCardDebts || ''}
+                        onChange={(e) => setCreditCardDebts(Number(e.target.value))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="carLoan">Car Loan (S$/month)</Label>
+                      <Input
+                        id="carLoan"
+                        type="number"
+                        placeholder="e.g., 500"
+                        value={carLoan || ''}
+                        onChange={(e) => setCarLoan(Number(e.target.value))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="otherHomeLoans">Other Home Loans (S$/month)</Label>
+                      <Input
+                        id="otherHomeLoans"
+                        type="number"
+                        placeholder="e.g., 0"
+                        value={otherHomeLoans || ''}
+                        onChange={(e) => setOtherHomeLoans(Number(e.target.value))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="otherLoans">Other Loans (S$/month)</Label>
+                      <Input
+                        id="otherLoans"
+                        type="number"
+                        placeholder="e.g., 0"
+                        value={otherLoans || ''}
+                        onChange={(e) => setOtherLoans(Number(e.target.value))}
+                      />
+                    </div>
+                    <div className="pt-2 border-t">
+                      <p className="text-sm font-semibold">
+                        Total Monthly Obligations: {formatCurrency(totalMonthlyDebts)}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Loan Parameters */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Loan Parameters</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="stressTestRate">Stress Test Interest Rate (%)</Label>
+                      <Input
+                        id="stressTestRate"
+                        type="number"
+                        step="0.1"
+                        placeholder="e.g., 4.5"
+                        value={stressTestRate || ''}
+                        onChange={(e) => setStressTestRate(Number(e.target.value))}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Typically 3.5% - 4.5% based on current bank rates
+                      </p>
+                    </div>
+                    <div>
+                      <Label htmlFor="loanTenure">Loan Tenure: {loanTenureYears} years</Label>
+                      <Slider
+                        id="loanTenure"
+                        min={5}
+                        max={35}
+                        step={1}
+                        value={[loanTenureYears]}
+                        onValueChange={(val) => setLoanTenureYears(val[0])}
+                        className="mt-2"
+                      />
+                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>5 years</span>
+                        <span>35 years</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Right Column: Results */}
+              <div>
+                <Card className="sticky top-6">
+                  <CardHeader>
+                    <CardTitle>TDSR Results</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {tdsrResult ? (
+                      <>
+                        <div>
+                          <p className="text-sm text-gray-500">Effective Monthly Income</p>
+                          <p className="text-2xl font-bold">{formatCurrency(effectiveMonthlyIncome)}</p>
+                          <p className="text-xs text-gray-400">
+                            After {borrowingConfig.tdsr.variableIncomeHaircutPct}% haircut on variable income
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="text-sm text-gray-500">
+                            TDSR Limit ({formatPercentage(borrowingConfig.tdsr.limit)})
+                          </p>
+                          <p className="text-2xl font-bold">
+                            {formatCurrency(effectiveMonthlyIncome * borrowingConfig.tdsr.limit)}
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="text-sm text-gray-500">Current Monthly Obligations</p>
+                          <p className="text-2xl font-bold">{formatCurrency(totalMonthlyDebts)}</p>
+                        </div>
+
+                        <div>
+                          <p className="text-sm text-gray-500">Available for Mortgage Payment</p>
+                          <p className="text-2xl font-bold text-emerald-600">
+                            {formatCurrency(Math.max(0, tdsrResult.availableForMortgage))}
+                          </p>
+                        </div>
+
+                        <div className="pt-4 border-t">
+                          <p className="text-sm text-gray-500">Maximum Loan Amount</p>
+                          <p className="text-3xl font-bold text-emerald-600">
+                            {maxLoanTDSR ? formatCurrency(maxLoanTDSR.maxLoanAmount) : 'N/A'}
+                          </p>
+                          {maxLoanTDSR && maxLoanTDSR.limitingFactor && (
+                            <p className="text-xs text-gray-400 mt-1">
+                              Limited by: {maxLoanTDSR.limitingFactor === 'tdsr' ? 'TDSR' : 'MSR'}
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <p className="text-sm text-gray-500">Maximum Property Price (80% LTV)</p>
+                          <p className="text-2xl font-bold">
+                            {maxLoanTDSR ? formatCurrency(maxLoanTDSR.maxLoanAmount / 0.8) : 'N/A'}
+                          </p>
+                        </div>
+
+                        {/* Traffic Light Indicator */}
+                        {trafficLightStatus && (
+                          <div className="pt-4 border-t">
+                            <div
+                              className={`p-4 rounded-lg ${
+                                trafficLightStatus.color === 'green'
+                                  ? 'bg-emerald-50 border border-emerald-200'
+                                  : trafficLightStatus.color === 'yellow'
+                                  ? 'bg-yellow-50 border border-yellow-200'
+                                  : 'bg-red-50 border border-red-200'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className={`w-4 h-4 rounded-full ${
+                                    trafficLightStatus.color === 'green'
+                                      ? 'bg-emerald-500'
+                                      : trafficLightStatus.color === 'yellow'
+                                      ? 'bg-yellow-500'
+                                      : 'bg-red-500'
+                                  }`}
+                                />
+                                <div>
+                                  <p className="text-sm font-semibold">
+                                    TDSR: {formatPercentage(tdsrResult.tdsrRatio)}
+                                  </p>
+                                  <p className="text-xs text-gray-600">{trafficLightStatus.label}</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-center py-12">
+                        <p className="text-gray-400">Enter your income to see results</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* MSR Tab */}
+          <TabsContent value="msr" className="mt-6">
+            <Card>
+              <CardContent className="py-12">
+                <div className="text-center text-gray-400">
+                  <p>MSR Calculator coming in Task 5</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* Footer */}
+        <div className="mt-8 text-center text-xs text-gray-400">
+          <p>
+            Rates sourced from MAS Notice 632 (Residential Property Loans) and current market conditions.
+          </p>
+          <p>Last updated: February 2026</p>
         </div>
       </div>
     </main>
