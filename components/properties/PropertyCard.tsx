@@ -191,8 +191,8 @@ export function PropertyCard({ property, className = '' }: PropertyCardProps) {
 
         {/* Top-left badge stack */}
         <div className="absolute top-2 left-2 flex items-center gap-1">
-          {/* Verification Icon Badge */}
           <TooltipProvider>
+            {/* Verification Icon Badge */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center ${verificationBgClass}`}>
@@ -203,11 +203,9 @@ export function PropertyCard({ property, className = '' }: PropertyCardProps) {
                 <p>{verificationLabel}</p>
               </TooltipContent>
             </Tooltip>
-          </TooltipProvider>
 
-          {/* Featured Icon Badge */}
-          {property.featured && (
-            <TooltipProvider>
+            {/* Featured Icon Badge */}
+            {property.featured && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="w-7 h-7 rounded-full flex items-center justify-center bg-amber-500">
@@ -218,15 +216,13 @@ export function PropertyCard({ property, className = '' }: PropertyCardProps) {
                   <p>Featured Listing</p>
                 </TooltipContent>
               </Tooltip>
-            </TooltipProvider>
-          )}
+            )}
 
-          {/* Owner Direct Icon Badge */}
-          {property.listingSource === ListingSource.OwnerDirect && (
-            <TooltipProvider>
+            {/* Owner Direct Icon Badge */}
+            {property.listingSource === ListingSource.OwnerDirect && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center bg-emerald-600">
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center bg-emerald-500">
                     <Home className="w-4 h-4 text-white" />
                   </div>
                 </TooltipTrigger>
@@ -234,8 +230,8 @@ export function PropertyCard({ property, className = '' }: PropertyCardProps) {
                   <p>Owner Direct Listing</p>
                 </TooltipContent>
               </Tooltip>
-            </TooltipProvider>
-          )}
+            )}
+          </TooltipProvider>
         </div>
 
         {/* Top-right: quality score dot + heart button */}
