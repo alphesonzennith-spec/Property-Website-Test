@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { ArrowLeft, MapPin, Bed, Bath, Ruler } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 function ComparisonContent() {
   const searchParams = useSearchParams();
@@ -28,7 +28,7 @@ function ComparisonContent() {
     return (
       <div className="text-center py-12">
         <p className="text-gray-500">No properties selected for comparison.</p>
-        <Link href="/(portal)/buy">
+        <Link href="/residential/buy">
           <Button className="mt-4">Go to Search</Button>
         </Link>
       </div>
@@ -50,137 +50,120 @@ function ComparisonContent() {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {ids.map((id) => (
-          <Skeleton key={id} className="h-96 w-full" />
+          <Skeleton key={id} className="h-[600px] w-full rounded-xl" />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Property Images Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {properties.map((property) => {
-          const primaryImage = property.images.find((img) => img.isPrimary) ?? property.images[0];
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {properties.map((property) => {
+        const primaryImage = property.images.find((img) => img.isPrimary) ?? property.images[0];
 
-          return (
-            <Card key={property.id}>
-              <div className="aspect-video relative overflow-hidden rounded-t-xl">
-                {primaryImage ? (
-                  <Image
-                    src={primaryImage.url}
-                    alt={property.address}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-200" />
-                )}
+        return (
+          <Card key={property.id} className="flex flex-col overflow-hidden">
+            {/* Property Image */}
+            <div className="aspect-video relative overflow-hidden flex-shrink-0">
+              {primaryImage ? (
+                <Image
+                  src={primaryImage.url}
+                  alt={property.address}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gray-200" />
+              )}
+            </div>
+
+            {/* Property Header */}
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base line-clamp-2">{property.address}</CardTitle>
+              <p className="text-2xl font-extrabold text-emerald-600">
+                ${property.price.toLocaleString()}
+              </p>
+            </CardHeader>
+
+            {/* Property Details - Scrollable if needed */}
+            <CardContent className="space-y-3 flex-grow overflow-y-auto">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                {/* PSF */}
+                <div className="col-span-2 pb-2 border-b">
+                  <div className="text-gray-500 text-xs font-medium">Price per sqft</div>
+                  <div className="font-semibold text-gray-900">
+                    ${property.psf?.toLocaleString() ?? 'N/A'}
+                  </div>
+                </div>
+
+                {/* District */}
+                <div>
+                  <div className="text-gray-500 text-xs font-medium">District</div>
+                  <div className="font-semibold text-gray-900">{property.district}</div>
+                </div>
+
+                {/* Property Type */}
+                <div>
+                  <div className="text-gray-500 text-xs font-medium">Type</div>
+                  <div className="font-semibold text-gray-900">{property.propertyType}</div>
+                </div>
+
+                {/* Bedrooms */}
+                <div>
+                  <div className="text-gray-500 text-xs font-medium">Bedrooms</div>
+                  <div className="font-semibold text-gray-900">{property.bedrooms}</div>
+                </div>
+
+                {/* Bathrooms */}
+                <div>
+                  <div className="text-gray-500 text-xs font-medium">Bathrooms</div>
+                  <div className="font-semibold text-gray-900">{property.bathrooms}</div>
+                </div>
+
+                {/* Floor Area */}
+                <div className="col-span-2">
+                  <div className="text-gray-500 text-xs font-medium">Floor Area</div>
+                  <div className="font-semibold text-gray-900">
+                    {property.floorAreaSqft.toLocaleString()} sqft
+                  </div>
+                </div>
+
+                {/* Tenure */}
+                <div>
+                  <div className="text-gray-500 text-xs font-medium">Tenure</div>
+                  <div className="font-semibold text-gray-900">{property.tenure}</div>
+                </div>
+
+                {/* Furnishing */}
+                <div>
+                  <div className="text-gray-500 text-xs font-medium">Furnishing</div>
+                  <div className="font-semibold text-gray-900">{property.furnishing}</div>
+                </div>
+
+                {/* Verification Level */}
+                <div className="col-span-2 pt-2 border-t">
+                  <div className="text-gray-500 text-xs font-medium">Verification Level</div>
+                  <div className="font-semibold text-gray-900">{property.verificationLevel}</div>
+                </div>
+
+                {/* Quality Score */}
+                <div>
+                  <div className="text-gray-500 text-xs font-medium">Quality Score</div>
+                  <div className="font-semibold text-gray-900">
+                    {property.listingQualityScore ?? 'N/A'}/100
+                  </div>
+                </div>
+
+                {/* Listing Source */}
+                <div>
+                  <div className="text-gray-500 text-xs font-medium">Source</div>
+                  <div className="font-semibold text-gray-900">{property.listingSource}</div>
+                </div>
               </div>
-              <CardHeader>
-                <CardTitle className="text-lg">{property.address}</CardTitle>
-                <p className="text-2xl font-extrabold text-emerald-600">
-                  ${property.price.toLocaleString()}
-                </p>
-              </CardHeader>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Comparison Table */}
-      <Card>
-        <CardContent className="p-0">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left p-4 bg-gray-50 font-semibold">Feature</th>
-                {properties.map((property) => (
-                  <th key={property.id} className="text-left p-4 bg-gray-50">
-                    Property {properties.indexOf(property) + 1}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-b">
-                <td className="p-4 font-medium">Price</td>
-                {properties.map((p) => (
-                  <td key={p.id} className="p-4">${p.price.toLocaleString()}</td>
-                ))}
-              </tr>
-              <tr className="border-b">
-                <td className="p-4 font-medium">PSF</td>
-                {properties.map((p) => (
-                  <td key={p.id} className="p-4">${p.psf?.toLocaleString() ?? 'N/A'}</td>
-                ))}
-              </tr>
-              <tr className="border-b">
-                <td className="p-4 font-medium">Property Type</td>
-                {properties.map((p) => (
-                  <td key={p.id} className="p-4">{p.propertyType}</td>
-                ))}
-              </tr>
-              <tr className="border-b">
-                <td className="p-4 font-medium">Bedrooms</td>
-                {properties.map((p) => (
-                  <td key={p.id} className="p-4">{p.bedrooms}</td>
-                ))}
-              </tr>
-              <tr className="border-b">
-                <td className="p-4 font-medium">Bathrooms</td>
-                {properties.map((p) => (
-                  <td key={p.id} className="p-4">{p.bathrooms}</td>
-                ))}
-              </tr>
-              <tr className="border-b">
-                <td className="p-4 font-medium">Floor Area</td>
-                {properties.map((p) => (
-                  <td key={p.id} className="p-4">{p.floorAreaSqft.toLocaleString()} sqft</td>
-                ))}
-              </tr>
-              <tr className="border-b">
-                <td className="p-4 font-medium">Tenure</td>
-                {properties.map((p) => (
-                  <td key={p.id} className="p-4">{p.tenure}</td>
-                ))}
-              </tr>
-              <tr className="border-b">
-                <td className="p-4 font-medium">Furnishing</td>
-                {properties.map((p) => (
-                  <td key={p.id} className="p-4">{p.furnishing}</td>
-                ))}
-              </tr>
-              <tr className="border-b">
-                <td className="p-4 font-medium">District</td>
-                {properties.map((p) => (
-                  <td key={p.id} className="p-4">{p.district}</td>
-                ))}
-              </tr>
-              <tr className="border-b">
-                <td className="p-4 font-medium">Verification Level</td>
-                {properties.map((p) => (
-                  <td key={p.id} className="p-4">{p.verificationLevel}</td>
-                ))}
-              </tr>
-              <tr className="border-b">
-                <td className="p-4 font-medium">Quality Score</td>
-                {properties.map((p) => (
-                  <td key={p.id} className="p-4">
-                    {p.listingQualityScore ?? 'N/A'}/100
-                  </td>
-                ))}
-              </tr>
-              <tr>
-                <td className="p-4 font-medium">Listing Source</td>
-                {properties.map((p) => (
-                  <td key={p.id} className="p-4">{p.listingSource}</td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }
@@ -191,7 +174,7 @@ export default function ComparePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-6">
-          <Link href="/(portal)/buy">
+          <Link href="/residential/buy">
             <Button variant="ghost" size="sm" className="gap-2 mb-4">
               <ArrowLeft className="w-4 h-4" />
               Back to Search
@@ -205,7 +188,7 @@ export default function ComparePage() {
           </p>
         </div>
 
-        <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+        <Suspense fallback={<div className="grid grid-cols-1 md:grid-cols-3 gap-6">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-[600px] rounded-xl" />)}</div>}>
           <ComparisonContent />
         </Suspense>
       </div>
