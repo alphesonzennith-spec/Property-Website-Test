@@ -647,3 +647,55 @@ onChange={(e) => setFilter('fieldName', e.target.value === '' ? undefined : Numb
 - Details: 2-column grid for compact display
 
 ---
+
+### Calculator Mogul.sg Layout Pattern
+
+**Location:** `/app/resources/calculators/tdsr/page.tsx`, `/app/resources/calculators/msr/page.tsx`
+
+**Pattern:** Horizontal layout matching mogul.sg design - inputs on left, results on right
+
+**Component Structure:**
+```tsx
+<CalculatorContainer>
+  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    {/* Left: Inputs (65%) */}
+    <div className="lg:col-span-2 space-y-6">
+      <PillToggle /> {/* Single/Joint */}
+      <InputRow /> {/* Income fields */}
+      <InputRow /> {/* Debt fields */}
+    </div>
+
+    {/* Right: Results (35%) */}
+    <div className="lg:col-span-1">
+      <ResultsPanel results={[...]} />
+    </div>
+  </div>
+</CalculatorContainer>
+```
+
+**Key Components:**
+- **CalculatorContainer**: White rounded container with padding
+- **PillToggle**: Pill-style toggle for Single/Joint selection
+- **InputRow**: Horizontal row with label (20%) and inputs (80%)
+  - Always shows both Main and Joint inputs
+  - Joint inputs disabled in Single mode
+- **ResultsPanel**: Gray background panel with result rows
+
+**Layout Details:**
+- Desktop (≥1024px): Horizontal 65/35 split
+- Mobile (<1024px): Vertical stack (inputs top, results below)
+- Spacing: `gap-8` between columns, `space-y-6` between input rows
+- Colors: Blue (`blue-600`) for active states and final results
+- Typography: `text-sm` for labels, `text-2xl` for highlighted results
+
+**State Management:**
+- Use custom hooks (`useTDSRCalculation`, `useMSRCalculation`)
+- Hooks encapsulate all calculation logic
+- Pages are thin UI layers
+
+**Where it matters:**
+- All calculator pages (TDSR, MSR, Stamp Duty, Affordability)
+- Any form with results panel layout
+- Responsive designs needing side-by-side on desktop, stacked on mobile
+
+---
