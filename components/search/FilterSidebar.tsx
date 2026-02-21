@@ -47,7 +47,7 @@ export function FilterSidebar() {
           className="px-4 py-2"
         >
           {/* 1. Price Range */}
-          <AccordionItem value="price">
+          <AccordionItem value="price" className="border-b">
             <AccordionTrigger className="text-sm font-semibold py-3 hover:no-underline">
               Price Range (SGD)
             </AccordionTrigger>
@@ -82,7 +82,7 @@ export function FilterSidebar() {
           </AccordionItem>
 
           {/* 2. Property Type */}
-          <AccordionItem value="type">
+          <AccordionItem value="type" className="border-b">
             <AccordionTrigger className="text-sm font-semibold py-3 hover:no-underline">
               Property Type
             </AccordionTrigger>
@@ -106,7 +106,7 @@ export function FilterSidebar() {
           </AccordionItem>
 
           {/* 3. Bedrooms */}
-          <AccordionItem value="beds">
+          <AccordionItem value="beds" className="border-b">
             <AccordionTrigger className="text-sm font-semibold py-3 hover:no-underline">
               Bedrooms
             </AccordionTrigger>
@@ -141,7 +141,7 @@ export function FilterSidebar() {
           </AccordionItem>
 
           {/* 4. Bathrooms */}
-          <AccordionItem value="baths">
+          <AccordionItem value="baths" className="border-b">
             <AccordionTrigger className="text-sm font-semibold py-3 hover:no-underline">
               Bathrooms
             </AccordionTrigger>
@@ -163,7 +163,7 @@ export function FilterSidebar() {
           </AccordionItem>
 
           {/* 5. Floor Area */}
-          <AccordionItem value="area">
+          <AccordionItem value="area" className="border-b">
             <AccordionTrigger className="text-sm font-semibold py-3 hover:no-underline">
               Floor Area (sqft)
             </AccordionTrigger>
@@ -198,7 +198,7 @@ export function FilterSidebar() {
           </AccordionItem>
 
           {/* 6. Furnishing */}
-          <AccordionItem value="furnishing">
+          <AccordionItem value="furnishing" className="border-b">
             <AccordionTrigger className="text-sm font-semibold py-3 hover:no-underline">
               Furnishing
             </AccordionTrigger>
@@ -221,7 +221,7 @@ export function FilterSidebar() {
           </AccordionItem>
 
           {/* 7. Tenure */}
-          <AccordionItem value="tenure">
+          <AccordionItem value="tenure" className="border-b">
             <AccordionTrigger className="text-sm font-semibold py-3 hover:no-underline">
               Tenure
             </AccordionTrigger>
@@ -244,7 +244,7 @@ export function FilterSidebar() {
           </AccordionItem>
 
           {/* 8. Listing Source */}
-          <AccordionItem value="source">
+          <AccordionItem value="source" className="border-b">
             <AccordionTrigger className="text-sm font-semibold py-3 hover:no-underline">
               Listing Source
             </AccordionTrigger>
@@ -285,7 +285,7 @@ export function FilterSidebar() {
           </AccordionItem>
 
           {/* 9. Location */}
-          <AccordionItem value="location">
+          <AccordionItem value="location" className="border-b">
             <AccordionTrigger className="text-sm font-semibold py-3 hover:no-underline">
               Location
             </AccordionTrigger>
@@ -316,7 +316,7 @@ export function FilterSidebar() {
           </AccordionItem>
 
           {/* 10. Quality Score */}
-          <AccordionItem value="quality">
+          <AccordionItem value="quality" className="border-b">
             <AccordionTrigger className="text-sm font-semibold py-3 hover:no-underline">
               Quality Score: {filters.qualityScoreMin ?? 0}+
             </AccordionTrigger>
@@ -338,7 +338,7 @@ export function FilterSidebar() {
           </AccordionItem>
 
           {/* 11. Owner Verification */}
-          <AccordionItem value="singpass">
+          <AccordionItem value="singpass" className="border-none">
             <AccordionTrigger className="text-sm font-semibold py-3 hover:no-underline">
               Owner Verification
             </AccordionTrigger>
