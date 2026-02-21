@@ -17,6 +17,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { CalculatorNav } from '@/components/calculators/CalculatorNav';
 
 export default function TdsrMsrCalculatorPage() {
   // Fetch borrowing config from regulatory rates
@@ -206,6 +207,7 @@ export default function TdsrMsrCalculatorPage() {
         <h1 className="text-3xl font-extrabold text-[#1E293B] mb-3">
           TDSR & MSR Calculator
         </h1>
+        <CalculatorNav active="tdsr" />
         <p className="text-gray-500 mb-8">
           Calculate your Total Debt Servicing Ratio and Mortgage Servicing Ratio
         </p>
