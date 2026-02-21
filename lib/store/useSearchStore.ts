@@ -11,6 +11,9 @@ interface SearchState {
   // AI search tags
   aiTags: string[];
 
+  // Map view toggle
+  mapViewEnabled: boolean;
+
   // Actions
   setFilter: (key: keyof PropertyFilters, value: any) => void;
   setFilters: (filters: Partial<PropertyFilters>) => void;
@@ -22,12 +25,15 @@ interface SearchState {
 
   setAiTags: (tags: string[]) => void;
   removeAiTag: (tag: string) => void;
+
+  toggleMapView: () => void;
 }
 
 export const useSearchStore = create<SearchState>((set) => ({
   filters: {},
   comparisonList: [],
   aiTags: [],
+  mapViewEnabled: false,
 
   setFilter: (key, value) =>
     set((state) => ({
@@ -78,4 +84,7 @@ export const useSearchStore = create<SearchState>((set) => ({
     set((state) => ({
       aiTags: state.aiTags.filter((t) => t !== tag),
     })),
+
+  toggleMapView: () =>
+    set((state) => ({ mapViewEnabled: !state.mapViewEnabled })),
 }));

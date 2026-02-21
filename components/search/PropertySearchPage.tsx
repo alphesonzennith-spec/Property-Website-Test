@@ -2,10 +2,13 @@
 
 import React, { useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { MapPin } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { AISearchBar } from './AISearchBar';
 import { FilterSidebar } from './FilterSidebar';
 import { ResultsArea } from './ResultsArea';
 import { ComparisonFloatingBar } from './ComparisonFloatingBar';
+import { MapPlaceholder } from './MapPlaceholder';
 import { useSearchStore } from '@/lib/store';
 import { ListingType } from '@/types';
 
@@ -16,7 +19,7 @@ interface PropertySearchPageProps {
 function SearchPageContent({ listingType }: PropertySearchPageProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { filters, setFilters } = useSearchStore();
+  const { filters, setFilters, mapViewEnabled, toggleMapView } = useSearchStore();
 
   // Sync URL params to store on mount
   useEffect(() => {
@@ -61,28 +64,62 @@ function SearchPageContent({ listingType }: PropertySearchPageProps) {
           <h1 className="text-4xl font-extrabold text-[#1E293B] mb-4">
             {listingType === ListingType.Sale ? 'Properties for Sale' : 'Properties for Rent'}
           </h1>
-          <p className="text-gray-500 mb-6">
+          <p className="text-gray-500 mb-4">
             Find verified listings with AI-powered search and advanced filters
           </p>
+
+          {/* Map View Toggle */}
+          <div className="mb-4">
+            <Button
+              variant={mapViewEnabled ? "default" : "outline"}
+              onClick={toggleMapView}
+              size="sm"
+              className="gap-2"
+            >
+              <MapPin className="w-4 h-4" />
+              {mapViewEnabled ? "List View" : "Map View"}
+            </Button>
+          </div>
 
           {/* AI Search Bar */}
           <AISearchBar />
         </div>
 
-        {/* Main Layout: Sidebar + Results */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left: Filter Sidebar */}
-          <aside className="lg:col-span-1">
-            <div className="sticky top-6">
-              <FilterSidebar />
+        {/* Conditional Layout */}
+        {mapViewEnabled ? (
+          /* Map View: 40/60 split */
+          <div className="grid grid-cols-5 gap-6">
+            {/* Left: Search (40%) */}
+            <div className="col-span-2">
+              <div className="grid grid-cols-1 gap-6">
+                <FilterSidebar />
+                <ResultsArea listingType={listingType} />
+              </div>
             </div>
-          </aside>
 
-          {/* Right: Results Area */}
-          <section className="lg:col-span-3">
-            <ResultsArea listingType={listingType} />
-          </section>
-        </div>
+            {/* Right: Map (60%) */}
+            <div className="col-span-3">
+              <div className="sticky top-6">
+                <MapPlaceholder />
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* List View: Normal layout */
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Left: Filter Sidebar */}
+            <aside className="lg:col-span-1">
+              <div className="sticky top-6">
+                <FilterSidebar />
+              </div>
+            </aside>
+
+            {/* Right: Results Area */}
+            <section className="lg:col-span-3">
+              <ResultsArea listingType={listingType} />
+            </section>
+          </div>
+        )}
       </div>
 
       {/* Floating Comparison Bar */}
