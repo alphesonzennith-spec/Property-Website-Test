@@ -47,7 +47,7 @@ export function AISearchBar() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="pl-10 pr-32 h-12 text-base"
+          className="pl-10 pr-32 h-12 text-base bg-white border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
         />
         <Button
           onClick={handleSearch}
