@@ -171,7 +171,7 @@ export default function TdsrMsrCalculatorPage() {
   if (isLoading) {
     return (
       <main className="min-h-screen bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <Skeleton className="h-8 w-64 mb-4" />
           <Skeleton className="h-12 w-96 mb-8" />
           <Skeleton className="h-96 w-full" />
@@ -184,7 +184,7 @@ export default function TdsrMsrCalculatorPage() {
   if (error || !borrowingConfig) {
     return (
       <main className="min-h-screen bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <Alert variant="destructive">
             <AlertTitle>Unable to load regulatory rates</AlertTitle>
             <AlertDescription>
@@ -203,7 +203,7 @@ export default function TdsrMsrCalculatorPage() {
         <p className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-3">
           CALCULATORS / TDSR
         </p>
-        <h1 className="text-4xl font-extrabold text-[#1E293B] mb-4">
+        <h1 className="text-3xl font-extrabold text-[#1E293B] mb-3">
           TDSR & MSR Calculator
         </h1>
         <p className="text-gray-500 mb-8">
@@ -211,7 +211,7 @@ export default function TdsrMsrCalculatorPage() {
         </p>
 
         <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as 'tdsr' | 'msr')}>
-          <TabsList className="mb-8">
+          <TabsList className="mb-6">
             <TabsTrigger value="tdsr">TDSR</TabsTrigger>
             <TabsTrigger value="msr">
               MSR
@@ -220,14 +220,14 @@ export default function TdsrMsrCalculatorPage() {
           </TabsList>
 
           {/* TDSR Tab */}
-          <TabsContent value="tdsr" className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <TabsContent value="tdsr" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Left Column: Inputs */}
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {/* Applicant Mode Toggle */}
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Application Type</CardTitle>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Application Type</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <RadioGroup
@@ -248,12 +248,12 @@ export default function TdsrMsrCalculatorPage() {
 
                 {/* Income Section - Applicant 1 */}
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">
                       Monthly Income {applicantMode === 'joint' ? '(Applicant 1)' : ''}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-3">
                     <div>
                       <Label htmlFor="fixedIncome">Fixed Monthly Income (SGD)</Label>
                       <Input
@@ -290,10 +290,10 @@ export default function TdsrMsrCalculatorPage() {
                 {/* Joint Applicant Income */}
                 {applicantMode === 'joint' && (
                   <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Monthly Income (Applicant 2)</CardTitle>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base">Monthly Income (Applicant 2)</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-3">
                       <div>
                         <Label htmlFor="fixedIncome2">Fixed Monthly Income (SGD)</Label>
                         <Input
@@ -324,10 +324,10 @@ export default function TdsrMsrCalculatorPage() {
 
                 {/* Debt Obligations */}
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Monthly Debt Obligations</CardTitle>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Monthly Debt Obligations</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-3">
                     <div>
                       <Label htmlFor="creditCardDebts">Credit Card Minimum Payments (SGD)</Label>
                       <Input
@@ -386,10 +386,10 @@ export default function TdsrMsrCalculatorPage() {
 
                 {/* Loan Parameters */}
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Loan Parameters</CardTitle>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Loan Parameters</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-3">
                     <div>
                       <Label htmlFor="stressTestRate">Stress Test Rate (%)</Label>
                       <Input
@@ -425,12 +425,12 @@ export default function TdsrMsrCalculatorPage() {
               </div>
 
               {/* Right Column: Results */}
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">TDSR Results</CardTitle>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">TDSR Results</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-3">
                     {tdsrResult ? (
                       <>
                         <div>
@@ -515,16 +515,16 @@ export default function TdsrMsrCalculatorPage() {
           </TabsContent>
 
           {/* MSR Tab */}
-          <TabsContent value="msr" className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <TabsContent value="msr" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Left Column: Inputs */}
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">MSR Calculator</CardTitle>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">MSR Calculator</CardTitle>
                     <p className="text-sm text-gray-500">For HDB and EC properties only</p>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-3">
                     <div>
                       <Label htmlFor="msrIncome">Gross Monthly Income (SGD)</Label>
                       <Input
@@ -572,12 +572,12 @@ export default function TdsrMsrCalculatorPage() {
               </div>
 
               {/* Right Column: Results */}
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">MSR Results</CardTitle>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">MSR Results</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-3">
                     {msrResult ? (
                       <>
                         {borrowingConfig && 'msr' in borrowingConfig && (
@@ -665,7 +665,7 @@ export default function TdsrMsrCalculatorPage() {
         {/* Purchasing Power Box */}
         {((activeTab === 'tdsr' && maxLoanTDSR) || (activeTab === 'msr' && maxLoanMSR)) && (
           <Card className="mt-8 border-2 border-emerald-500 bg-emerald-50/50">
-            <CardHeader>
+            <CardHeader className="pb-3">
               <CardTitle className="text-xl text-emerald-800">
                 Your Maximum Purchasing Power
               </CardTitle>
