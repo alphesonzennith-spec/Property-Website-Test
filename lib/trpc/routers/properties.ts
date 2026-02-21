@@ -45,6 +45,7 @@ const PropertyFiltersSchema = z.object({
   bedroomsMin:       z.number().int().optional(),
   bedroomsMax:       z.number().int().optional(),
   bathroomsMin:      z.number().int().optional(),
+  bathroomsMax:      z.number().int().optional(),
   floorAreaMin:      z.number().optional(),
   floorAreaMax:      z.number().optional(),
   furnishing:        z.nativeEnum(Furnishing).optional(),
@@ -99,6 +100,7 @@ function applyFilters(props: Property[], input: PropertyFilters): Property[] {
   if (input.bedroomsMin !== undefined) results = results.filter((p) => p.bedrooms >= input.bedroomsMin!);
   if (input.bedroomsMax !== undefined) results = results.filter((p) => p.bedrooms <= input.bedroomsMax!);
   if (input.bathroomsMin !== undefined) results = results.filter((p) => p.bathrooms >= input.bathroomsMin!);
+  if (input.bathroomsMax !== undefined) results = results.filter((p) => p.bathrooms <= input.bathroomsMax!);
   if (input.floorAreaMin !== undefined) results = results.filter((p) => p.floorAreaSqft >= input.floorAreaMin!);
   if (input.floorAreaMax !== undefined) results = results.filter((p) => p.floorAreaSqft <= input.floorAreaMax!);
   if (input.furnishing)             results = results.filter((p) => p.furnishing === input.furnishing);

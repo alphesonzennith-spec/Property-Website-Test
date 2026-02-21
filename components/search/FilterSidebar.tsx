@@ -62,7 +62,7 @@ export function FilterSidebar() {
                   max="50000000"
                   className="h-9"
                   value={filters.priceMin ?? ''}
-                  onChange={(e) => setFilter('priceMin', Number(e.target.value) || undefined)}
+                  onChange={(e) => setFilter('priceMin', e.target.value === '' ? undefined : Number(e.target.value))}
                 />
               </div>
               <div>
@@ -75,7 +75,7 @@ export function FilterSidebar() {
                   max="50000000"
                   className="h-9"
                   value={filters.priceMax ?? ''}
-                  onChange={(e) => setFilter('priceMax', Number(e.target.value) || undefined)}
+                  onChange={(e) => setFilter('priceMax', e.target.value === '' ? undefined : Number(e.target.value))}
                 />
               </div>
             </AccordionContent>
@@ -121,7 +121,7 @@ export function FilterSidebar() {
                   max="10"
                   className="h-9"
                   value={filters.bedroomsMin ?? ''}
-                  onChange={(e) => setFilter('bedroomsMin', Number(e.target.value) || undefined)}
+                  onChange={(e) => setFilter('bedroomsMin', e.target.value === '' ? undefined : Number(e.target.value))}
                 />
               </div>
               <div>
@@ -134,7 +134,7 @@ export function FilterSidebar() {
                   max="10"
                   className="h-9"
                   value={filters.bedroomsMax ?? ''}
-                  onChange={(e) => setFilter('bedroomsMax', Number(e.target.value) || undefined)}
+                  onChange={(e) => setFilter('bedroomsMax', e.target.value === '' ? undefined : Number(e.target.value))}
                 />
               </div>
             </AccordionContent>
@@ -156,7 +156,22 @@ export function FilterSidebar() {
                   max="10"
                   className="h-9"
                   value={filters.bathroomsMin ?? ''}
-                  onChange={(e) => setFilter('bathroomsMin', Number(e.target.value) || undefined)}
+                  onChange={(e) => setFilter('bathroomsMin', e.target.value === '' ? undefined : Number(e.target.value))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="bathroomsMax" className="text-xs text-gray-600">
+                  Max
+                </Label>
+                <Input
+                  id="bathroomsMax"
+                  type="number"
+                  placeholder="No limit"
+                  min="0"
+                  max="10"
+                  value={filters.bathroomsMax ?? ''}
+                  onChange={(e) => setFilter('bathroomsMax', e.target.value === '' ? undefined : Number(e.target.value))}
+                  className="h-9 mt-1"
                 />
               </div>
             </AccordionContent>
@@ -178,7 +193,7 @@ export function FilterSidebar() {
                   max="50000"
                   className="h-9"
                   value={filters.floorAreaMin ?? ''}
-                  onChange={(e) => setFilter('floorAreaMin', Number(e.target.value) || undefined)}
+                  onChange={(e) => setFilter('floorAreaMin', e.target.value === '' ? undefined : Number(e.target.value))}
                 />
               </div>
               <div>
@@ -191,7 +206,7 @@ export function FilterSidebar() {
                   max="50000"
                   className="h-9"
                   value={filters.floorAreaMax ?? ''}
-                  onChange={(e) => setFilter('floorAreaMax', Number(e.target.value) || undefined)}
+                  onChange={(e) => setFilter('floorAreaMax', e.target.value === '' ? undefined : Number(e.target.value))}
                 />
               </div>
             </AccordionContent>
