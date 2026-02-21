@@ -262,6 +262,78 @@ if (input.ownerSingpassVerified !== undefined) {
 
 ---
 
+### Mistake: Using text badges instead of icon badges on cluttered cards
+
+**Issue:** Property cards with too many text badges become cluttered and hard to scan
+
+**Why it's wrong:** Text badges take up too much space, especially when there are 3+ badges on one card
+
+**Correct solution:**
+Use icon-only badges with tooltips:
+```typescript
+<TooltipProvider>
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <div className="w-7 h-7 rounded-full flex items-center justify-center bg-emerald-500">
+        <Icon className="w-4 h-4 text-white" />
+      </div>
+    </TooltipTrigger>
+    <TooltipContent><p>Description</p></TooltipContent>
+  </Tooltip>
+</TooltipProvider>
+```
+
+**Where it matters:**
+- Property cards with multiple badges
+- Any dense UI where space is limited
+
+---
+
+### Mistake: Not providing independent scrolling for filter sidebars
+
+**Issue:** Filter sidebar scrolls with the page, making it hard to access bottom filters without scrolling entire page
+
+**Why it's wrong:** Poor UX - users can't quickly scan all filters, especially on pages with many results
+
+**Correct solution:**
+```typescript
+<div className="h-full flex flex-col">
+  <div className="sticky-header">...</div>
+  <div className="flex-1 overflow-y-auto">
+    {/* Filters with their own scrollbar */}
+  </div>
+</div>
+```
+
+**Where it matters:**
+- Filter sidebars
+- Any sidebar with many options
+- Navigation menus with long lists
+
+---
+
+### Mistake: Not handling zero values in number input onChange handlers
+
+**Issue:** Using `Number(e.target.value) || undefined` converts 0 to `undefined`
+
+**Why it's wrong:** Users can't filter for properties with 0 bedrooms/bathrooms if that's a valid use case
+
+**Incorrect:**
+```typescript
+onChange={(e) => setFilter('fieldName', Number(e.target.value) || undefined)}
+```
+
+**Correct solution:**
+```typescript
+onChange={(e) => setFilter('fieldName', e.target.value === '' ? undefined : Number(e.target.value))}
+```
+
+**Where it matters:**
+- Any number input that accepts 0 as a valid value
+- Quantity fields, count fields, score fields
+
+---
+
 ## Architecture Decisions
 
 ### Why Zustand instead of React Context?
@@ -401,3 +473,177 @@ if (input.ownerSingpassVerified !== undefined) {
 - [ ] Share search results with family/friends
 - [ ] Collaborative comparison (multiple users can add properties)
 - [ ] Agent recommendations based on search criteria
+
+---
+
+## UI/UX Patterns
+
+### Property Card Icon Badge Pattern
+
+**Location:** `components/properties/PropertyCard.tsx`
+
+**Pattern:** Use icon-only badges with tooltips instead of text badges to reduce clutter
+
+**Implementation:**
+```typescript
+<TooltipProvider>
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <div className="w-7 h-7 rounded-full flex items-center justify-center bg-emerald-500">
+        <Icon className="w-4 h-4 text-white" />
+      </div>
+    </TooltipTrigger>
+    <TooltipContent>
+      <p>Badge Description</p>
+    </TooltipContent>
+  </Tooltip>
+</TooltipProvider>
+```
+
+**Key points:**
+- Badge size: 28px × 28px circles (w-7 h-7)
+- Icon size: 16px × 16px (w-4 h-4)
+- Use single TooltipProvider wrapping all tooltips (not one per tooltip)
+- Tooltip shows full description on hover
+
+---
+
+### Filter Sidebar Accordion Pattern
+
+**Location:** `components/search/FilterSidebar.tsx`
+
+**Pattern:** Use accordion for collapsible filter sections with independent scrolling
+
+**Implementation:**
+```typescript
+<div className="h-full flex flex-col bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+  {/* Sticky Header */}
+  <div className="flex items-center justify-between p-4 border-b bg-gray-50/80 backdrop-blur-sm">
+    <h2 className="text-base font-bold text-gray-900">Filters</h2>
+    <Button variant="ghost" size="sm" onClick={resetFilters} className="h-8 px-3 text-xs text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50">
+      Reset All
+    </Button>
+  </div>
+
+  {/* Scrollable Accordion Container */}
+  <div className="flex-1 overflow-y-auto">
+    <Accordion type="multiple" defaultValue={['price', 'type', 'beds']} className="px-4 py-2">
+      <AccordionItem value="price" className="border-b">
+        <AccordionTrigger className="text-sm font-semibold py-3 hover:no-underline">
+          Price Range
+        </AccordionTrigger>
+        <AccordionContent className="space-y-3 pb-4">
+          {/* Filter inputs */}
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  </div>
+</div>
+```
+
+**Key points:**
+- Container: `h-full flex flex-col` (fills parent height)
+- Header: Sticky with `bg-gray-50/80 backdrop-blur-sm`
+- Scroll wrapper: `flex-1 overflow-y-auto` (independent scrollbar)
+- Default open: Most common filters
+- AccordionItem: All except last have `border-b`, last has `border-none`
+- Trigger: `text-sm font-semibold py-3 hover:no-underline`
+- Content: `space-y-3 pb-4`
+
+---
+
+### Uniform Grid Heights Pattern
+
+**Location:** `components/search/ResultsArea.tsx`, `components/properties/PropertyCard.tsx`
+
+**Pattern:** Use flexbox to ensure all cards in a row have the same height
+
+**Implementation:**
+```typescript
+// In ResultsArea (grid container)
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+  {data.items.map((property) => (
+    <div key={property.id} className="relative flex flex-col">
+      <PropertyCard property={property} className="h-full" />
+    </div>
+  ))}
+</div>
+
+// In PropertyCard (card structure)
+<Link className="flex flex-col h-full">
+  <div className="flex-shrink-0" style={{ aspectRatio: '16/9' }}>
+    {/* Image */}
+  </div>
+  <div className="flex-grow flex flex-col justify-between">
+    {/* Content */}
+  </div>
+</Link>
+```
+
+**Key points:**
+- Grid wrapper: `flex flex-col` on wrapper div
+- PropertyCard: `h-full` className passed as prop
+- Card: `flex flex-col h-full` on Link
+- Image: `flex-shrink-0` maintains aspect ratio
+- Body: `flex-grow` fills remaining space
+
+---
+
+### Calculator Compact Spacing Pattern
+
+**Location:** All calculator pages (`app/resources/calculators/*/page.tsx`)
+
+**Pattern:** Use compact spacing for calculator pages to improve scannability
+
+**Spacing values:**
+- Main padding: `py-12` (not py-20)
+- H1: `text-3xl mb-3` (not text-4xl mb-4)
+- Tab list margin: `mb-6` (not mb-8)
+- Section spacing: `space-y-6` (not space-y-8)
+- Card stack: `space-y-4` (not space-y-6)
+- Card fields: `space-y-3` (not space-y-4)
+- Card titles: `text-base` (not text-lg)
+- Card headers: Add `pb-3`
+
+**Key points:**
+- Consistent spacing creates rhythm
+- Tighter spacing improves scannability
+- Still maintains readability
+
+---
+
+### Vertical Comparison Layout Pattern
+
+**Location:** `app/compare/page.tsx`
+
+**Pattern:** Use vertical columns for property comparison instead of horizontal table
+
+**Implementation:**
+```typescript
+<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+  {properties.map((property) => (
+    <Card key={property.id} className="flex flex-col overflow-hidden">
+      <div className="aspect-video relative overflow-hidden flex-shrink-0">
+        {/* Image */}
+      </div>
+      <CardHeader className="pb-3">
+        {/* Address + Price */}
+      </CardHeader>
+      <CardContent className="space-y-3 flex-grow overflow-y-auto">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+          {/* Property details */}
+        </div>
+      </CardContent>
+    </Card>
+  ))}
+</div>
+```
+
+**Key points:**
+- Grid: `grid-cols-3` for side-by-side
+- Card: `flex flex-col` for vertical layout
+- Image: `flex-shrink-0` maintains aspect
+- Content: `overflow-y-auto` for long details
+- Details: 2-column grid for compact display
+
+---
