@@ -87,15 +87,15 @@ export function ResultsArea({ listingType }: ResultsAreaProps) {
 
       {/* Results Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-96 w-full rounded-xl" />
           ))}
         </div>
       ) : data && data.items.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {data.items.map((property) => (
-            <div key={property.id} className="relative">
+            <div key={property.id} className="relative flex flex-col">
               {/* Compare Checkbox */}
               <div className="absolute top-4 right-4 z-10">
                 <div className="bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-sm flex items-center gap-2">
@@ -112,7 +112,7 @@ export function ResultsArea({ listingType }: ResultsAreaProps) {
                   </label>
                 </div>
               </div>
-              <PropertyCard property={property as any} />
+              <PropertyCard property={property as any} className="h-full" />
             </div>
           ))}
         </div>

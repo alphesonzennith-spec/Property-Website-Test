@@ -165,11 +165,12 @@ export function PropertyCard({ property, className = '' }: PropertyCardProps) {
         'hover:-translate-y-0.5 hover:shadow-lg',
         'transition-all duration-200',
         'overflow-hidden',
+        'flex flex-col h-full',
         className,
       ].join(' ')}
     >
       {/* Image area */}
-      <div className="relative overflow-hidden rounded-t-xl" style={{ aspectRatio: '16/9' }}>
+      <div className="relative overflow-hidden rounded-t-xl flex-shrink-0" style={{ aspectRatio: '16/9' }}>
         {hasImage ? (
           <Image
             src={primaryImage.url}
@@ -273,7 +274,7 @@ export function PropertyCard({ property, className = '' }: PropertyCardProps) {
       </div>
 
       {/* Card body */}
-      <div className="p-4">
+      <div className="p-4 flex-grow flex flex-col justify-between">
         {/* Row 1 — Price */}
         <div className="flex items-baseline justify-between gap-2">
           <span className="text-xl font-extrabold text-[#0d2137]">
