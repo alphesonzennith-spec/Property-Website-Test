@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Calculator, FileText, DollarSign } from 'lucide-react';
+import { Calculator, FileText, DollarSign, TrendingUp } from 'lucide-react';
 
 interface CalculatorNavProps {
-  active: 'tdsr' | 'stamp-duty' | 'affordability';
+  active: 'tdsr' | 'msr' | 'stamp-duty' | 'affordability';
 }
 
 export function CalculatorNav({ active }: CalculatorNavProps) {
@@ -16,7 +16,17 @@ export function CalculatorNav({ active }: CalculatorNavProps) {
           className="gap-2"
         >
           <Calculator className="w-4 h-4" />
-          TDSR & MSR
+          TDSR
+        </Button>
+      </Link>
+      <Link href="/resources/calculators/msr">
+        <Button
+          variant={active === 'msr' ? 'default' : 'outline'}
+          size="sm"
+          className="gap-2"
+        >
+          <TrendingUp className="w-4 h-4" />
+          MSR
         </Button>
       </Link>
       <Link href="/resources/calculators/stamp-duty">
