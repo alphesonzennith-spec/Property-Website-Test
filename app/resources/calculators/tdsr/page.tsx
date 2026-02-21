@@ -199,7 +199,7 @@ export default function TdsrMsrCalculatorPage() {
 
   return (
     <main className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <p className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-3">
           CALCULATORS / TDSR
         </p>
