@@ -64,7 +64,7 @@ export function MobileNav() {
               <Building2 className="w-4 h-4 text-white" />
             </div>
             <span className="font-bold text-[15px]">
-              Alzen<span className="text-[#f59e0b]">Realty</span>
+              ALZEN<span className="text-[#f59e0b]">Realty</span>
             </span>
           </SheetTitle>
           <SheetDescription className="sr-only">Navigation menu</SheetDescription>

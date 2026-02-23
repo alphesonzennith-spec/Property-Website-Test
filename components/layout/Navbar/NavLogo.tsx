@@ -11,7 +11,7 @@ export function NavLogo() {
       </div>
       <div className="flex flex-col leading-none">
         <span className="font-bold text-[15px] text-[#1E293B] tracking-tight">
-          Alzen<span className="text-[#f59e0b]">Realty</span>
+          ALZEN<span className="text-[#f59e0b]">Realty</span>
         </span>
         <span className="text-[9px] text-gray-400 tracking-widest uppercase mt-0.5">
           Be In Control of Your Assets

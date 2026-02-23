@@ -3,7 +3,7 @@ import { Building2, Shield, Phone, Mail } from 'lucide-react';
 
 const footerLinks = {
   Company: [
-    { label: 'About Alzen Realty', href: '/about' },
+    { label: 'About ALZEN Realty', href: '/about' },
     { label: 'How It Works', href: '/about#how-it-works' },
     { label: 'Careers', href: '/careers' },
     { label: 'Press', href: '/press' },
@@ -40,7 +40,7 @@ export function Footer() {
                 <Building2 className="w-5 h-5 text-white" />
               </div>
               <span className="font-bold text-lg">
-                Alzen<span className="text-brand-primary">Realty</span>
+                ALZEN<span className="text-brand-primary">Realty</span>
               </span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed mb-4">
@@ -76,7 +76,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-white/10 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-gray-400 text-xs">
-            © {new Date().getFullYear()} Alzen Realty Pte Ltd. All rights reserved. CEA Licence:
+            © {new Date().getFullYear()} ALZEN Realty Pte Ltd. All rights reserved. CEA Licence:
             L1234567H
           </p>
           <div className="flex items-center gap-4">

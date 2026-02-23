@@ -7,7 +7,7 @@ export default function AboutPage() {
         <p className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-3">
           COMPANY
         </p>
-        <h1 className="text-4xl font-extrabold text-[#1E293B] mb-4">About Alzen Realty</h1>
+        <h1 className="text-4xl font-extrabold text-[#1E293B] mb-4">About ALZEN Realty</h1>
         <p className="text-gray-500 mb-8">This section is coming soon.</p>
         <Link href="/" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
           ← Back to Home

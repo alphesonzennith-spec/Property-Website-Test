@@ -1,6 +1,7 @@
 'use client';
 
 import useEmblaCarousel from 'embla-carousel-react';
+import AutoScroll from 'embla-carousel-auto-scroll';
 import { ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
 
 interface AiAgent {
@@ -67,11 +68,15 @@ const AI_AGENTS: AiAgent[] = [
 ];
 
 export function AiTeamCarousel() {
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    align: 'start',
-    slidesToScroll: 1,
-    containScroll: 'trimSnaps',
-  });
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    {
+      align: 'start',
+      slidesToScroll: 1,
+      containScroll: 'trimSnaps',
+      loop: true,
+    },
+    [AutoScroll({ playOnInit: true, stopOnInteraction: false, speed: 1 })]
+  );
 
   const scrollPrev = () => emblaApi?.scrollPrev();
   const scrollNext = () => emblaApi?.scrollNext();

@@ -13,7 +13,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Alzen Realty — Singapore Property Platform',
+  title: 'ALZEN Realty — Singapore Property Platform',
   description:
     'AI-native Singapore property platform. Buy, rent, sell, and manage properties with Singpass verification and AI-powered insights.',
   keywords: 'Singapore property, HDB, condo, real estate, buy property Singapore',

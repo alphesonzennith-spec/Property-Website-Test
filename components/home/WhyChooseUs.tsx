@@ -58,7 +58,7 @@ export function WhyChooseUs() {
         {/* Heading */}
         <div className="text-center mb-14">
           <h2 className="text-3xl md:text-4xl font-extrabold text-[#1E293B] mb-3">
-            Why Singapore Trusts Alzen Realty
+            Why Singapore Trusts ALZEN Realty
           </h2>
           <p className="text-gray-500 max-w-xl mx-auto">
             Built on transparency, powered by AI, and secured by Singpass.
