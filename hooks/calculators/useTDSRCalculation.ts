@@ -94,7 +94,7 @@ export function useTDSRCalculation() {
   }, [borrowingConfig, effectiveIncome, totalDebts, stressTestRate, loanTenureYears]);
 
   // Monthly mortgage limit
-  const monthlyMortgageLimit = maxLoanAmount?.monthlyRepayment ?? 0;
+  const monthlyMortgageLimit = (maxLoanAmount as any)?.monthlyRepayment ?? 0;
 
   // TDSR limit from config
   const tdsrLimit = borrowingConfig && 'tdsr' in borrowingConfig ? borrowingConfig.tdsr.limit * 100 : 55;
@@ -130,7 +130,7 @@ export function useTDSRCalculation() {
     totalDebts,
     tdsrPercentage,
     tdsrLimit,
-    maxLoanAmount: maxLoanAmount?.loanAmount ?? 0,
+    maxLoanAmount: maxLoanAmount?.maxLoan ?? 0,
     monthlyMortgageLimit,
 
     // Config & loading

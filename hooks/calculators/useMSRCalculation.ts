@@ -65,7 +65,7 @@ export function useMSRCalculation() {
   }, [borrowingConfig, totalIncome, propertyType, stressTestRate, loanTenureYears]);
 
   // Monthly mortgage limit
-  const monthlyMortgageLimit = maxLoanAmount?.monthlyRepayment ?? 0;
+  const monthlyMortgageLimit = (maxLoanAmount as any)?.monthlyRepayment ?? 0;
 
   // MSR limit from config
   const msrLimit = borrowingConfig && 'msr' in borrowingConfig ? borrowingConfig.msr.limit * 100 : 30;
@@ -87,7 +87,7 @@ export function useMSRCalculation() {
     totalIncome,
     msrPercentage,
     msrLimit,
-    maxLoanAmount: maxLoanAmount?.loanAmount ?? 0,
+    maxLoanAmount: maxLoanAmount?.maxLoan ?? 0,
     monthlyMortgageLimit,
 
     // Config & loading
