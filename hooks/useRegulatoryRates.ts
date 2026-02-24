@@ -10,7 +10,9 @@ type SectionAlias =
   | 'mortgage'
   | 'cpf'
   | 'propertyTax'
-  | 'misc';
+  | 'misc'
+  | 'ltv'
+  | 'hdbEligibility';
 
 const SECTION_ALIAS_MAP: Record<SectionAlias, 'stampDuty' | 'borrowing' | 'mortgage' | 'cpf' | 'propertyTax' | 'misc'> = {
   borrowingLimits: 'borrowing',
@@ -20,7 +22,10 @@ const SECTION_ALIAS_MAP: Record<SectionAlias, 'stampDuty' | 'borrowing' | 'mortg
   cpf: 'cpf',
   propertyTax: 'propertyTax',
   misc: 'misc',
+  ltv: 'borrowing',
+  hdbEligibility: 'borrowing',
 };
+
 
 /**
  * Custom hook to fetch and cache regulatory rates.

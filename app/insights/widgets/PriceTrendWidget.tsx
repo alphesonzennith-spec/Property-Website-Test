@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useDashboardStore } from '@/lib/store/useDashboardStore';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
@@ -39,6 +39,15 @@ export function PriceTrendWidget() {
     // In a real app, this would use tRPC:
     // const { data, isLoading } = trpc.insights.getPriceTrend.useQuery({ propertyType, district, timePeriod });
     const data = useMemo(() => generateTrendData(propertyType, district, timePeriod), [propertyType, district, timePeriod]);
+
+    const [isMounted, setIsMounted] = React.useState(false);
+    React.useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    if (!isMounted) {
+        return <div className="w-full h-full flex items-center justify-center bg-gray-50/50 animate-pulse rounded-xl" />;
+    }
 
     return (
         <div className="w-full h-full p-2 pb-6">

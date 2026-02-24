@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useDashboardStore } from '@/lib/store/useDashboardStore';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -41,6 +41,15 @@ const generateDistributionData = (propertyType: string, district: string) => {
 export function PriceDistributionWidget() {
     const { propertyType, district } = useDashboardStore();
     const data = useMemo(() => generateDistributionData(propertyType, district), [propertyType, district]);
+
+    const [isMounted, setIsMounted] = React.useState(false);
+    React.useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    if (!isMounted) {
+        return <div className="w-full h-full flex items-center justify-center bg-gray-50/50 animate-pulse rounded-xl" />;
+    }
 
     return (
         <div className="w-full h-full p-2 pb-6">

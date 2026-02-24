@@ -19,21 +19,21 @@ const NAV_ITEMS = [
 
 export function CalculatorNav({ active }: CalculatorNavProps) {
   return (
-    <div className="flex gap-2 mb-6 flex-wrap">
+    <div className="flex gap-2 mb-8 w-full">
       {NAV_ITEMS.map(({ id, href, label, Icon }) => {
         const isActive = active === id;
         return (
-          <Link key={id} href={href}>
+          <Link key={id} href={href} className="flex-1">
             <Button
               variant="outline"
               size="sm"
-              className={`gap-2 transition-colors ${isActive
-                  ? 'bg-emerald-700 text-white border-emerald-700 hover:bg-emerald-800 hover:border-emerald-800'
-                  : 'hover:border-emerald-600 hover:text-emerald-700'
+              className={`w-full h-auto py-2.5 gap-2 transition-all duration-200 shadow-sm ${isActive
+                ? 'bg-emerald-700 text-white border-emerald-700 hover:bg-emerald-800 hover:border-emerald-800'
+                : 'text-gray-600 hover:border-emerald-600 hover:text-emerald-700 hover:bg-emerald-50'
                 }`}
             >
               <Icon className="w-4 h-4" />
-              {label}
+              <span className="text-xs font-semibold">{label}</span>
             </Button>
           </Link>
         );

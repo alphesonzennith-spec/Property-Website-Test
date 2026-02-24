@@ -37,9 +37,8 @@ export function DashboardControls() {
             <div className="flex flex-wrap items-center gap-3">
 
                 {/* View Tabs */}
-                <TabsList className="grid w-full sm:w-[400px] grid-cols-3 mr-0 sm:mr-4">
+                <TabsList className="grid w-full sm:w-[300px] grid-cols-2 mr-0 sm:mr-4">
                     <TabsTrigger value="analytics">Data</TabsTrigger>
-                    <TabsTrigger value="dashboard">Interactive Grid</TabsTrigger>
                     <TabsTrigger value="map">Map Interface</TabsTrigger>
                 </TabsList>
 

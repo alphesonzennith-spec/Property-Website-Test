@@ -17,10 +17,6 @@ export default function InsightsDashboard() {
                         <AnalyticsTab />
                     </TabsContent>
 
-                    <TabsContent value="dashboard" className="w-full min-h-[800px]">
-                        <p className="text-sm text-gray-500 mb-4 px-2">Widgets can be dragged and resized. Your layout is auto-saved.</p>
-                        <WidgetGrid />
-                    </TabsContent>
 
                     <TabsContent value="map" className="h-[700px] bg-slate-100 rounded-xl relative overflow-hidden border">
                         <div className="absolute top-4 left-4 z-10 bg-white/90 p-4 rounded-xl shadow-lg border border-gray-200 pointer-events-none">

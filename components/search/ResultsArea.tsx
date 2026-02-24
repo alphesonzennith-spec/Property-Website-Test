@@ -9,15 +9,16 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { PropertyCard } from '@/components/properties/PropertyCard';
 import { useSearchStore } from '@/lib/store';
 import { trpc } from '@/lib/trpc/client';
-import { AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { AlertCircle, ChevronLeft, ChevronRight, MapPin, List } from 'lucide-react';
 import { ListingType } from '@/types';
 
 interface ResultsAreaProps {
   listingType: ListingType;
+  compact?: boolean;
 }
 
-export function ResultsArea({ listingType }: ResultsAreaProps) {
-  const { filters, comparisonList, addToComparison, removeFromComparison } = useSearchStore();
+export function ResultsArea({ listingType, compact }: ResultsAreaProps) {
+  const { filters, comparisonList, addToComparison, removeFromComparison, mapViewEnabled, toggleMapView } = useSearchStore();
   const [sortBy, setSortBy] = useState<string>('quality_score');
   const [page, setPage] = useState(1);
 
@@ -55,8 +56,8 @@ export function ResultsArea({ listingType }: ResultsAreaProps) {
 
   return (
     <div className="w-full space-y-6">
-      {/* Sort Options */}
-      <div className="flex items-center justify-between">
+      {/* Sort Options & View Toggle */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="text-sm text-gray-600">
           {isLoading ? (
             <Skeleton className="h-4 w-32" />
@@ -64,36 +65,50 @@ export function ResultsArea({ listingType }: ResultsAreaProps) {
             `${data?.total ?? 0} properties found`
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <label htmlFor="sort-select" className="text-sm text-gray-600">
-            Sort by:
-          </label>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger id="sort-select" className="w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="quality_score">Quality Score</SelectItem>
-              <SelectItem value="newest">Newest</SelectItem>
-              <SelectItem value="price_asc">Price: Low to High</SelectItem>
-              <SelectItem value="price_desc">Price: High to Low</SelectItem>
-              <SelectItem value="psf_asc">PSF: Low to High</SelectItem>
-              <SelectItem value="psf_desc">PSF: High to Low</SelectItem>
-              <SelectItem value="most_viewed">Most Viewed</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <label htmlFor="sort-select" className="text-sm text-gray-600 shrink-0">
+              Sort by:
+            </label>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger id="sort-select" className="w-40 sm:w-48 h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="quality_score">Quality Score</SelectItem>
+                <SelectItem value="newest">Newest</SelectItem>
+                <SelectItem value="price_asc">Price: Low to High</SelectItem>
+                <SelectItem value="price_desc">Price: High to Low</SelectItem>
+                <SelectItem value="psf_asc">PSF: Low to High</SelectItem>
+                <SelectItem value="psf_desc">PSF: High to Low</SelectItem>
+                <SelectItem value="most_viewed">Most Viewed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {!compact && (
+            <Button
+              variant={mapViewEnabled ? "default" : "outline"}
+              onClick={toggleMapView}
+              size="sm"
+              className="gap-2 h-9"
+            >
+              <MapPin className="w-4 h-4" />
+              {mapViewEnabled ? "List View" : "Map View"}
+            </Button>
+          )}
         </div>
       </div>
 
       {/* Results Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
+        <div className={`grid gap-6 ${compact ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-2' : 'grid-cols-1 md:grid-cols-2'}`}>
+          {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-96 w-full rounded-xl" />
           ))}
         </div>
       ) : data && data.items.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className={`grid gap-6 ${compact ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-2' : 'grid-cols-1 md:grid-cols-2'}`}>
           {data.items.map((property) => (
             <div key={property.id} className="relative flex flex-col">
               {/* Compare Checkbox */}

@@ -13,13 +13,13 @@ import {
 
 const CALCULATORS = [
   {
-    id: 'm-value',
-    title: 'M-Value Calculator',
+    id: 'property-value',
+    title: 'Property Market Value Calculator',
     description: "Estimate your property's current market value using our real-time AI valuation engine based on recent transactions.",
     icon: <Home className="h-8 w-8 text-blue-600" />,
     color: 'bg-blue-50 border-blue-200',
     hover: 'hover:border-blue-400 hover:shadow-blue-100/50',
-    href: '/resources/calculators/m-value'
+    href: '/resources/calculators/property-value'
   },
   {
     id: 'stamp-duty',
@@ -57,15 +57,7 @@ const CALCULATORS = [
     hover: 'hover:border-indigo-400 hover:shadow-indigo-100/50',
     href: '/resources/calculators/mortgage'
   },
-  {
-    id: 'progressive-payment',
-    title: 'Progressive Payment',
-    description: "Estimate staged payments for uncompleted (BUC) properties based on the standard construction timeline.",
-    icon: <CalendarDays className="h-8 w-8 text-cyan-600" />,
-    color: 'bg-cyan-50 border-cyan-200',
-    hover: 'hover:border-cyan-400 hover:shadow-cyan-100/50',
-    href: '/resources/calculators/progressive-payment'
-  },
+
   {
     id: 'affordability',
     title: 'Affordability Planner',

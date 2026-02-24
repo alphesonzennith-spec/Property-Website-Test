@@ -122,36 +122,90 @@ export interface MortgageOutput {
 // ── Affordability ─────────────────────────────────────────────────────────────
 
 export interface AffordabilityInput {
-  /** Monthly gross income in SGD */
+  /** Monthly gross fixed income in SGD */
   grossMonthlyIncome: number;
-  /** Total existing monthly debt repayments in SGD */
-  existingMonthlyDebts: number;
+  /** Monthly gross variable income in SGD (haircut will be applied) */
+  variableMonthlyIncome: number;
+  /** Joint applicant fixed monthly income (only used when applicantMode === 'joint') */
+  jointFixedIncome: number;
+  /** Joint applicant variable monthly income */
+  jointVariableIncome: number;
+  /** Monthly credit card minimum payments in SGD */
+  creditCardMinimum: number;
+  /** Monthly car loan repayments in SGD */
+  carLoan: number;
+  /** Monthly repayments for other outstanding home loans in SGD */
+  otherHomeLoans: number;
+  /** Monthly other loan repayments in SGD */
+  otherLoans: number;
   /** CPF Ordinary Account balance available for down payment in SGD */
   cpfOABalance: number;
   /** Cash savings available for down payment in SGD */
-  cashSavings: number;
+  cashOnHand: number;
   preferredTenureYears: number;
   annualInterestRatePct: number;
   buyerResidencyStatus: ResidencyStatus;
   existingPropertiesOwned: number;
   propertyType: PropertyType;
+  /** Buyer age — used to compute maximum permissible loan tenure */
+  buyerAge: number;
+  /** Whether this is a joint application */
+  applicantMode: 'single' | 'joint';
+}
+
+/** Detailed constraint check for a single regulatory limit */
+export interface ConstraintCheck {
+  label: string;
+  ratioActual: number;
+  limitValue: number;
+  withinLimit: boolean;
+  /** True if this constraint is the binding (most restrictive) limit */
+  isBinding: boolean;
+}
+
+/** Source breakdown for downpayment and total funds */
+export interface DownpaymentBreakdown {
+  /** Option to Purchase (5%) cash only */
+  optionToPurchase: number;
+  /** Exercise of Option (additional downpayment, CPF or cash eligible) */
+  exerciseOption: number;
+  /** Total downpayment excluding loan */
+  totalDownpayment: number;
+  loanAmount: number;
+  bsd: number;
+  absd: number;
+  totalCashUsed: number;
+  totalCPFUsed: number;
+  totalCashNeeded: number;
+}
+
+/** Proportional breakdown for the composition bar chart */
+export interface AffordabilityChartData {
+  cashAmount: number;
+  cpfAmount: number;
+  loanAmount: number;
+  stampDutiesAmount: number;
+  totalAmount: number;
 }
 
 export interface AffordabilityOutput {
   /** Maximum property price the buyer can afford in SGD */
   maxAffordablePrice: number;
-  /** Maximum eligible loan amount based on TDSR / MSR limits */
   maxLoanAmount: number;
-  /** Minimum cash down payment required at the maximum loan quantum */
-  minCashDownPayment: number;
-  /** CPF OA amount applicable towards the down payment */
-  cpfApplicable: number;
-  /** Estimated monthly mortgage repayment at the maximum loan amount */
   estimatedMonthlyRepayment: number;
-  /** Estimated stamp duty at the maximum affordable price */
-  estimatedStampDuty: number;
-  /** Total cash that must be on hand at the point of purchase */
-  totalCashRequired: number;
+  /** Which regulatory constraint is binding the result */
+  bindingConstraint: 'TDSR' | 'MSR' | 'LTV' | 'Cash';
+  /** Per-constraint check results for the traffic-light panel */
+  constraints: {
+    tdsr: ConstraintCheck;
+    msr: ConstraintCheck | null; // null when property type is not HDB/EC
+    ltv: ConstraintCheck;
+    cash: ConstraintCheck;
+  };
+  downpayment: DownpaymentBreakdown;
+  chart: AffordabilityChartData;
+  /** Effective LTV percentage applied (as decimal, e.g. 0.75) */
+  ltvApplied: number;
   tdsrAtMaxLoan: number;
   withinTDSRLimit: boolean;
 }

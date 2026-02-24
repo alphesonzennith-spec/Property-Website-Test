@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useDashboardStore } from '@/lib/store/useDashboardStore';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -34,6 +34,15 @@ export function DistrictHeatmapWidget() {
     const { propertyType, district: selectedDistrict, setFilters } = useDashboardStore();
 
     const data = useMemo(() => getHeatmapData(propertyType), [propertyType]);
+
+    const [isMounted, setIsMounted] = React.useState(false);
+    React.useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    if (!isMounted) {
+        return <div className="w-full h-full flex items-center justify-center bg-gray-50/50 animate-pulse rounded-xl" />;
+    }
 
     // Find min/max to establish color scale (Green to Red)
     const minPsf = Math.min(...data.map(d => d.psf));

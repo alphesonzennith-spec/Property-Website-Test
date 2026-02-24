@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, ChevronDown, X } from 'lucide-react';
+import { Search, ChevronDown, X, Building2, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -9,20 +9,21 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { useRouter } from 'next/navigation';
 
 // --- Data ---
 const BUY_PRICE_OPTIONS = [
-  { value: 'under-500k', label: 'Under S$500K' },
-  { value: '500k-1m', label: 'S$500K – S$1M' },
-  { value: '1m-2m', label: 'S$1M – S$2M' },
-  { value: '2m-5m', label: 'S$2M – S$5M' },
-  { value: '5m-plus', label: 'S$5M+' },
+  { value: 'under-500k', label: 'Under S$500K', priceMin: 0, priceMax: 500000 },
+  { value: '500k-1m', label: 'S$500K – S$1M', priceMin: 500000, priceMax: 1000000 },
+  { value: '1m-2m', label: 'S$1M – S$2M', priceMin: 1000000, priceMax: 2000000 },
+  { value: '2m-5m', label: 'S$2M – S$5M', priceMin: 2000000, priceMax: 5000000 },
+  { value: '5m-plus', label: 'S$5M+', priceMin: 5000000, priceMax: undefined },
 ];
 const RENT_PRICE_OPTIONS = [
-  { value: 'under-2k', label: 'Under S$2K/mo' },
-  { value: '2k-4k', label: 'S$2K – S$4K/mo' },
-  { value: '4k-8k', label: 'S$4K – S$8K/mo' },
-  { value: '8k-plus', label: 'S$8K+/mo' },
+  { value: 'under-2k', label: 'Under S$2K/mo', priceMin: 0, priceMax: 2000 },
+  { value: '2k-4k', label: 'S$2K – S$4K/mo', priceMin: 2000, priceMax: 4000 },
+  { value: '4k-8k', label: 'S$4K – S$8K/mo', priceMin: 4000, priceMax: 8000 },
+  { value: '8k-plus', label: 'S$8K+/mo', priceMin: 8000, priceMax: undefined },
 ];
 const DISTRICT_OPTIONS = [
   { value: 'D01', label: 'D01 – Raffles Place / Marina' },
@@ -127,6 +128,8 @@ function MultiSelectFilter({ label, options, selected, onChange }: MultiSelectPr
 
 // --- Main Component ---
 export function HeroSearch() {
+  const router = useRouter();
+  const [category, setCategory] = useState<'residential' | 'commercial'>('residential');
   const [tab, setTab] = useState<'buy' | 'rent'>('buy');
   const [query, setQuery] = useState('');
   const [selectedDistricts, setSelectedDistricts] = useState<string[]>([]);
@@ -135,20 +138,74 @@ export function HeroSearch() {
 
   const priceOptions = tab === 'buy' ? BUY_PRICE_OPTIONS : RENT_PRICE_OPTIONS;
 
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+
+    if (query.trim()) params.set('q', query.trim());
+    if (selectedDistricts.length > 0) params.set('district', selectedDistricts[0]);
+    if (selectedTypes.length > 0) params.set('propertyType', selectedTypes[0]);
+
+    // Map selected price range to priceMin/priceMax
+    if (selectedPrices.length > 0) {
+      const allPriceOptions = [...BUY_PRICE_OPTIONS, ...RENT_PRICE_OPTIONS];
+      const priceOpt = allPriceOptions.find((p) => p.value === selectedPrices[0]);
+      if (priceOpt) {
+        if (priceOpt.priceMin !== undefined) params.set('priceMin', String(priceOpt.priceMin));
+        if (priceOpt.priceMax !== undefined) params.set('priceMax', String(priceOpt.priceMax));
+      }
+    }
+
+    const queryString = params.toString();
+    const targetPath = `/${category}/${tab}${queryString ? `?${queryString}` : ''}`;
+    router.push(targetPath);
+  };
+
+  const hasFilters = selectedDistricts.length > 0 || selectedTypes.length > 0 || selectedPrices.length > 0;
+
   return (
     <div className="w-full bg-white rounded-2xl border border-gray-200 shadow-md p-5">
-      {/* Tab toggle */}
-      <div className="flex gap-2 mb-4">
+
+      {/* Category + Listing Type Controls */}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        {/* Residential / Commercial */}
+        <div className="flex gap-1 p-1 bg-gray-100 rounded-xl">
+          <button
+            type="button"
+            onClick={() => setCategory('residential')}
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${category === 'residential'
+                ? 'bg-white text-[#1E293B] shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+              }`}
+          >
+            <Home className="w-3.5 h-3.5" />
+            Residential
+          </button>
+          <button
+            type="button"
+            onClick={() => setCategory('commercial')}
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${category === 'commercial'
+                ? 'bg-white text-[#1E293B] shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+              }`}
+          >
+            <Building2 className="w-3.5 h-3.5" />
+            Commercial
+          </button>
+        </div>
+
+        {/* Buy / Rent divider */}
+        <div className="w-px h-6 bg-gray-200" />
+
+        {/* Buy / Rent */}
         {(['buy', 'rent'] as const).map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => { setTab(t); setSelectedPrices([]); }}
-            className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${
-              tab === t
+            className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${tab === t
                 ? 'bg-[#F59E0B] text-white shadow-sm'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
+              }`}
           >
             {t === 'buy' ? 'BUY' : 'RENT'}
           </button>
@@ -163,11 +220,15 @@ export function HeroSearch() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             placeholder="Search by property name, street or district..."
             className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-[#1E293B] text-sm placeholder:text-gray-400 focus:outline-none focus:border-[#10B981] focus:ring-1 focus:ring-[#10B981] bg-gray-50"
           />
         </div>
-        <Button className="bg-[#F59E0B] hover:bg-amber-400 text-white font-semibold px-6 rounded-xl shadow-sm shrink-0">
+        <Button
+          onClick={handleSearch}
+          className="bg-[#F59E0B] hover:bg-amber-400 text-white font-semibold px-6 rounded-xl shadow-sm shrink-0"
+        >
           Search
         </Button>
       </div>
@@ -193,7 +254,7 @@ export function HeroSearch() {
           selected={selectedPrices}
           onChange={setSelectedPrices}
         />
-        {(selectedDistricts.length > 0 || selectedTypes.length > 0 || selectedPrices.length > 0) && (
+        {hasFilters && (
           <button
             type="button"
             onClick={() => { setSelectedDistricts([]); setSelectedTypes([]); setSelectedPrices([]); }}

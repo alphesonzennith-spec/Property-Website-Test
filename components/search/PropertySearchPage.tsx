@@ -2,12 +2,13 @@
 
 import React, { useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Map, List } from 'lucide-react';
 import { AISearchBar } from './AISearchBar';
 import { FilterSidebar } from './FilterSidebar';
 import { ResultsArea } from './ResultsArea';
 import { ComparisonFloatingBar } from './ComparisonFloatingBar';
+import { FloatingFilterBar } from './FloatingFilterBar';
 import { MapPlaceholder } from './MapPlaceholder';
 import { useSearchStore } from '@/lib/store';
 import { ListingType } from '@/types';
@@ -25,7 +26,6 @@ function SearchPageContent({ listingType }: PropertySearchPageProps) {
   useEffect(() => {
     const urlFilters: any = {};
 
-    // Parse URL search params
     if (searchParams.get('priceMin')) urlFilters.priceMin = Number(searchParams.get('priceMin'));
     if (searchParams.get('priceMax')) urlFilters.priceMax = Number(searchParams.get('priceMax'));
     if (searchParams.get('bedroomsMin')) urlFilters.bedroomsMin = Number(searchParams.get('bedroomsMin'));
@@ -37,9 +37,17 @@ function SearchPageContent({ listingType }: PropertySearchPageProps) {
     }
   }, [searchParams, setFilters]);
 
-  // Sync store filters to URL (debounced would be better in production)
+  // Sync store filters to URL
   useEffect(() => {
     const params = new URLSearchParams();
+    const activeFiltersCount = Object.keys(filters).length;
+
+    if (activeFiltersCount === 0) {
+      // If filters are cleared via resetFilters, clear the query string in URL
+      const currentPath = window.location.pathname;
+      router.replace(currentPath, { scroll: false });
+      return;
+    }
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
@@ -48,79 +56,92 @@ function SearchPageContent({ listingType }: PropertySearchPageProps) {
     });
 
     const newUrl = params.toString() ? `?${params.toString()}` : '';
-    if (newUrl !== `?${searchParams.toString()}`) {
-      router.replace(newUrl, { scroll: false });
+    const currentQuery = searchParams.toString() ? `?${searchParams.toString()}` : '';
+
+    if (newUrl !== currentQuery) {
+      router.replace(newUrl || window.location.pathname, { scroll: false });
     }
   }, [filters, router, searchParams]);
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-6">
-          <p className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">
-            PROPERTY SEARCH / {listingType.toUpperCase()}
-          </p>
-          <h1 className="text-4xl font-extrabold text-[#1E293B] mb-4">
-            {listingType === ListingType.Sale ? 'Properties for Sale' : 'Properties for Rent'}
-          </h1>
-          <p className="text-gray-500 mb-4">
-            Find verified listings with AI-powered search and advanced filters
-          </p>
-
-          {/* Map View Toggle */}
-          <div className="mb-4">
+      {/* =========================================================
+          MAP VIEW LAYOUT: full-width, floating filters
+         ========================================================= */}
+      {mapViewEnabled && (
+        <div className="fixed inset-0 top-[64px] z-40 bg-white flex flex-col overflow-hidden">
+          {/* Header strip for Map View */}
+          <div className="shrink-0 px-4 py-3 bg-white border-b border-gray-200 z-10 flex items-center justify-between">
+            <p className="text-xs font-semibold text-emerald-600 uppercase tracking-widest">
+              PROPERTY SEARCH / {listingType.toUpperCase()} / MAP VIEW
+            </p>
             <Button
-              variant={mapViewEnabled ? "default" : "outline"}
+              variant="outline"
               onClick={toggleMapView}
               size="sm"
-              className="gap-2"
+              className="gap-2 shrink-0"
             >
-              <MapPin className="w-4 h-4" />
-              {mapViewEnabled ? "List View" : "Map View"}
+              <List className="w-4 h-4" />
+              List View
             </Button>
           </div>
 
-          {/* AI Search Bar */}
-          <AISearchBar />
-        </div>
-
-        {/* Conditional Layout */}
-        {mapViewEnabled ? (
-          /* Map View: 40/60 split */
-          <div className="grid grid-cols-5 gap-6">
-            {/* Left: Search (40%) */}
-            <div className="col-span-2">
-              <div className="grid grid-cols-1 gap-6">
-                <FilterSidebar />
-                <ResultsArea listingType={listingType} />
+          {/* 40/60 split body */}
+          <div className="flex flex-1 overflow-hidden">
+            {/* Left Column: Results */}
+            <div className="w-[40%] h-full overflow-y-auto border-r border-gray-200">
+              <div className="p-6 h-full flex flex-col">
+                <div className="flex justify-center mb-6">
+                  <FloatingFilterBar />
+                </div>
+                <div className="flex-1">
+                  <ResultsArea listingType={listingType} compact />
+                </div>
               </div>
             </div>
 
-            {/* Right: Map (60%) */}
-            <div className="col-span-3">
-              <div className="sticky top-6">
-                <MapPlaceholder />
-              </div>
+            {/* Right Column: Map */}
+            <div className="w-[60%] h-full bg-gray-50 relative">
+              <MapPlaceholder />
             </div>
           </div>
-        ) : (
-          /* List View: Normal layout */
+        </div>
+      )}
+
+      {!mapViewEnabled && (
+        /* =========================================================
+           LIST VIEW LAYOUT: sidebar + results
+           ========================================================= */
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Header */}
+          <div className="mb-6">
+            <p className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">
+              PROPERTY SEARCH / {listingType.toUpperCase()}
+            </p>
+            <h1 className="text-4xl font-extrabold text-[#1E293B] mb-4">
+              {listingType === ListingType.Sale ? 'Properties for Sale' : 'Properties for Rent'}
+            </h1>
+            <p className="text-gray-500 mb-4">
+              Find verified listings with AI-powered search and advanced filters
+            </p>
+
+            {/* AI Search Bar */}
+            <AISearchBar />
+          </div>
+
+          {/* Filter Sidebar + Results */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Left: Filter Sidebar */}
             <aside className="lg:col-span-1">
               <div className="sticky top-6">
                 <FilterSidebar />
               </div>
             </aside>
-
-            {/* Right: Results Area */}
             <section className="lg:col-span-3">
               <ResultsArea listingType={listingType} />
             </section>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Floating Comparison Bar */}
       <ComparisonFloatingBar />
