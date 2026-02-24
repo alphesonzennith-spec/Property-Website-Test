@@ -2,7 +2,6 @@
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { CalculatorNav } from '@/components/calculators/CalculatorNav';
 import { CalculatorContainer } from '@/components/calculators/CalculatorContainer';
@@ -10,15 +9,20 @@ import { PillToggle } from '@/components/calculators/PillToggle';
 import { InputRow } from '@/components/calculators/InputRow';
 import { ResultsPanel } from '@/components/calculators/ResultsPanel';
 import { useMSRCalculation } from '@/hooks/calculators/useMSRCalculation';
-import { PropertyType } from '@/types';
 
 export default function MSRCalculatorPage() {
   const {
     // State
+    purchaseStatus,
+    setPurchaseStatus,
     fixedIncome,
     setFixedIncome,
     variableIncome,
     setVariableIncome,
+    fixedIncomeJoint,
+    setFixedIncomeJoint,
+    variableIncomeJoint,
+    setVariableIncomeJoint,
     propertyType,
     setPropertyType,
 
@@ -32,6 +36,8 @@ export default function MSRCalculatorPage() {
     isLoading,
     error,
   } = useMSRCalculation();
+
+  const isJoint = purchaseStatus === 'joint';
 
   // Loading state
   if (isLoading) {
@@ -83,8 +89,8 @@ export default function MSRCalculatorPage() {
     <main className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
-        <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">
-          CALCULATORS / MSR
+        <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wide mb-2">
+          RESOURCES / CALCULATORS / MSR
         </p>
         <h1 className="text-3xl font-bold text-gray-900 mb-3">
           Mortgage Servicing Ratio (MSR) Calculator
@@ -99,32 +105,22 @@ export default function MSRCalculatorPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column: Inputs */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Property Type Selection */}
-              <div className="flex items-start gap-4">
-                <label className="w-48 text-sm font-medium text-gray-900 pt-3 flex-shrink-0">
-                  Property Type
+              {/* Single / Joint Toggle */}
+              <div className="flex items-center gap-4">
+                <label className="w-48 text-sm font-medium text-gray-900 flex-shrink-0">
+                  Applicant Status
                 </label>
-                <RadioGroup
-                  value={propertyType}
-                  onValueChange={(val) => setPropertyType(val as PropertyType)}
-                  className="flex-1"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value={PropertyType.HDB} id="hdb" />
-                    <Label htmlFor="hdb" className="text-sm font-normal cursor-pointer">
-                      HDB Flat
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value={PropertyType.EC} id="ec" />
-                    <Label htmlFor="ec" className="text-sm font-normal cursor-pointer">
-                      Executive Condominium (EC)
-                    </Label>
-                  </div>
-                </RadioGroup>
+                <PillToggle
+                  value={purchaseStatus}
+                  onChange={(v) => setPurchaseStatus(v as 'single' | 'joint')}
+                  options={[
+                    { value: 'single', label: 'Single' },
+                    { value: 'joint', label: 'Joint' },
+                  ]}
+                />
               </div>
 
-              {/* Fixed Income - Single applicant only for MSR */}
+              {/* Fixed Income */}
               <div className="flex items-start gap-4">
                 <label className="w-48 text-sm font-medium text-gray-900 pt-3 flex-shrink-0">
                   Fixed income
@@ -135,36 +131,36 @@ export default function MSRCalculatorPage() {
                       Main applicant
                     </Label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-                        S$
-                      </span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">S$</span>
                       <input
                         id="fixedIncome-main"
                         type="number"
                         min="0"
-                        max="10000000"
                         placeholder="0"
                         value={fixedIncome || ''}
                         onChange={(e) => setFixedIncome(e.target.value === '' ? 0 : Number(e.target.value))}
-                        className="h-11 pl-9 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 px-4"
+                        className="h-11 pl-9 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none px-4"
                       />
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="fixedIncome-joint" className="text-xs text-gray-600 mb-1 block">
+                    <Label htmlFor="fixedIncome-joint" className={`text-xs mb-1 block ${isJoint ? 'text-gray-600' : 'text-gray-400'}`}>
                       Joint applicant
                     </Label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-                        S$
-                      </span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">S$</span>
                       <input
                         id="fixedIncome-joint"
                         type="number"
-                        disabled
+                        min="0"
                         placeholder="0"
-                        value="0"
-                        className="h-11 pl-9 w-full rounded-lg border border-gray-300 px-4 bg-gray-50 text-gray-400 cursor-not-allowed"
+                        disabled={!isJoint}
+                        value={isJoint ? (fixedIncomeJoint || '') : ''}
+                        onChange={(e) => setFixedIncomeJoint(e.target.value === '' ? 0 : Number(e.target.value))}
+                        className={`h-11 pl-9 w-full rounded-lg border border-gray-300 outline-none px-4 transition-colors ${isJoint
+                          ? 'focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500'
+                          : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                          }`}
                       />
                     </div>
                   </div>
@@ -182,36 +178,36 @@ export default function MSRCalculatorPage() {
                       Main applicant
                     </Label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-                        S$
-                      </span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">S$</span>
                       <input
                         id="variableIncome-main"
                         type="number"
                         min="0"
-                        max="10000000"
                         placeholder="0"
                         value={variableIncome || ''}
                         onChange={(e) => setVariableIncome(e.target.value === '' ? 0 : Number(e.target.value))}
-                        className="h-11 pl-9 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 px-4"
+                        className="h-11 pl-9 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none px-4"
                       />
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="variableIncome-joint" className="text-xs text-gray-600 mb-1 block">
+                    <Label htmlFor="variableIncome-joint" className={`text-xs mb-1 block ${isJoint ? 'text-gray-600' : 'text-gray-400'}`}>
                       Joint applicant
                     </Label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-                        S$
-                      </span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">S$</span>
                       <input
                         id="variableIncome-joint"
                         type="number"
-                        disabled
+                        min="0"
                         placeholder="0"
-                        value="0"
-                        className="h-11 pl-9 w-full rounded-lg border border-gray-300 px-4 bg-gray-50 text-gray-400 cursor-not-allowed"
+                        disabled={!isJoint}
+                        value={isJoint ? (variableIncomeJoint || '') : ''}
+                        onChange={(e) => setVariableIncomeJoint(e.target.value === '' ? 0 : Number(e.target.value))}
+                        className={`h-11 pl-9 w-full rounded-lg border border-gray-300 outline-none px-4 transition-colors ${isJoint
+                          ? 'focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500'
+                          : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                          }`}
                       />
                     </div>
                   </div>

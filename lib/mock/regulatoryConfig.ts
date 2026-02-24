@@ -42,6 +42,20 @@ export const PropertyTaxTierSchema = z.object({
   label: z.string(),
 });
 
+export const MaintenanceFeesSchema = z.object({
+  hdbMonthlyRange: z.object({ min: z.number(), max: z.number() }),
+  condoMonthlyPerSqft: z.object({ min: z.number(), max: z.number() }),
+  landedMonthlyEstimate: z.number(),
+  note: z.string(),
+});
+
+export const CPFRatesSchema = z.object({
+  oaInterestRate: z.number(), // decimal, e.g. 0.025 for 2.5%
+  saInterestRate: z.number(), // decimal, e.g. 0.04 for 4%
+  effectiveDate: z.string(),
+  sourceUrl: z.string().url(),
+});
+
 export const RegulatoryConfigSchema = z.object({
   version: z.string(),
   effectiveDate: z.string(), // ISO 8601
@@ -108,13 +122,22 @@ export const RegulatoryConfigSchema = z.object({
   propertyTax: z.object({
     ownerOccupied: z.array(PropertyTaxTierSchema),
     nonOwnerOccupied: z.array(PropertyTaxTierSchema),
+    annualValueProxyPct: z.number(), // % of purchase price used as AV proxy
+    effectiveDateOverride: z.string(),
+    sourceUrl: z.string(),
     description: z.string(),
   }),
 
+  maintenanceFees: MaintenanceFeesSchema,
+
   misc: z.object({
     legalConveyancingFeesPct: z.number(),
+    legalFeesEstimateRange: z.object({ min: z.number(), max: z.number() }),
     valuationFeeSGD: z.number(),
+    insuranceAnnualRange: z.object({ min: z.number(), max: z.number() }),
   }),
+
+  cpfRates: CPFRatesSchema,
 });
 
 // ── Type Exports ─────────────────────────────────────────────────────────────
@@ -125,6 +148,8 @@ export type ABSDRate = z.infer<typeof ABSDRateSchema>;
 export type SSDTier = z.infer<typeof SSDTierSchema>;
 export type LTVRule = z.infer<typeof LTVRuleSchema>;
 export type PropertyTaxTier = z.infer<typeof PropertyTaxTierSchema>;
+export type MaintenanceFees = z.infer<typeof MaintenanceFeesSchema>;
+export type CPFRates = z.infer<typeof CPFRatesSchema>;
 
 // ── Mock Data (Singapore 2024 Regulatory Rates) ─────────────────────────────
 
@@ -265,11 +290,30 @@ export const mockRegulatoryConfig: RegulatoryConfig = {
       { annualValueMin: 70000, annualValueMax: 90000, ownerOccupiedRate: 0, nonOwnerOccupiedRate: 0.18, label: '$70,000 to $90,000' },
       { annualValueMin: 90000, annualValueMax: null, ownerOccupiedRate: 0, nonOwnerOccupiedRate: 0.20, label: 'Above $90,000' },
     ],
-    description: 'Progressive property tax rates for owner-occupied and non-owner-occupied residential properties in Singapore (IRAS 2024).',
+    annualValueProxyPct: 0.035, // 3.5% of purchase price used as AV proxy for estimation
+    effectiveDateOverride: '2024-01-01',
+    sourceUrl: 'https://www.iras.gov.sg/taxes/property-tax/property-owners/property-tax-rates',
+    description: 'Progressive property tax rates for owner-occupied and non-owner-occupied residential properties in Singapore (IRAS 2024). Annual Value (AV) is IRAS-assessed; 3.5% of property value is used here as a proxy for estimation only.',
+  },
+
+  maintenanceFees: {
+    hdbMonthlyRange: { min: 20, max: 90 },
+    condoMonthlyPerSqft: { min: 0.30, max: 0.60 },
+    landedMonthlyEstimate: 200,
+    note: 'Estimated market ranges only — not regulatory figures. Actual fees vary by development, size, and facility tier.',
   },
 
   misc: {
     legalConveyancingFeesPct: 0.004, // 0.4% estimate (actual varies by firm and transaction complexity)
+    legalFeesEstimateRange: { min: 2500, max: 4000 }, // Estimated — varies by firm and complexity
     valuationFeeSGD: 500, // Typical professional valuation fee
+    insuranceAnnualRange: { min: 500, max: 1000 }, // Home & fire insurance — estimated
+  },
+
+  cpfRates: {
+    oaInterestRate: 0.025, // 2.5% p.a. — set by CPF Board
+    saInterestRate: 0.04,  // 4.0% p.a. — set by CPF Board
+    effectiveDate: '2024-01-01',
+    sourceUrl: 'https://www.cpf.gov.sg',
   },
 };

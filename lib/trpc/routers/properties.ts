@@ -2,7 +2,7 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { router, publicProcedure } from '../trpc';
-import { mockProperties, mockUsers, mockAgents } from '@/lib/mock';
+import { mockProperties, mockUsers, mockAgents, mockTransactions } from '@/lib/mock';
 import {
   PropertyType,
   ListingType,
@@ -34,31 +34,31 @@ const SortBy = z.enum([
 ]);
 
 const PropertyFiltersSchema = z.object({
-  keyword:           z.string().optional(),
-  listingType:       z.nativeEnum(ListingType).optional(),
-  propertyType:      z.nativeEnum(PropertyType).optional(),
-  district:          z.string().optional(),
-  hdbTown:           z.string().optional(),
-  hdbRoomType:       z.nativeEnum(HDBRoomType).optional(),
-  priceMin:          z.number().optional(),
-  priceMax:          z.number().optional(),
-  bedroomsMin:       z.number().int().optional(),
-  bedroomsMax:       z.number().int().optional(),
-  bathroomsMin:      z.number().int().optional(),
-  bathroomsMax:      z.number().int().optional(),
-  floorAreaMin:      z.number().optional(),
-  floorAreaMax:      z.number().optional(),
-  furnishing:        z.nativeEnum(Furnishing).optional(),
-  tenure:            z.nativeEnum(Tenure).optional(),
-  status:            z.nativeEnum(PropertyStatus).optional(),
+  keyword: z.string().optional(),
+  listingType: z.nativeEnum(ListingType).optional(),
+  propertyType: z.nativeEnum(PropertyType).optional(),
+  district: z.string().optional(),
+  hdbTown: z.string().optional(),
+  hdbRoomType: z.nativeEnum(HDBRoomType).optional(),
+  priceMin: z.number().optional(),
+  priceMax: z.number().optional(),
+  bedroomsMin: z.number().int().optional(),
+  bedroomsMax: z.number().int().optional(),
+  bathroomsMin: z.number().int().optional(),
+  bathroomsMax: z.number().int().optional(),
+  floorAreaMin: z.number().optional(),
+  floorAreaMax: z.number().optional(),
+  furnishing: z.nativeEnum(Furnishing).optional(),
+  tenure: z.nativeEnum(Tenure).optional(),
+  status: z.nativeEnum(PropertyStatus).optional(),
   verificationLevel: z.nativeEnum(VerificationLevel).optional(),
-  listingSource:     z.nativeEnum(ListingSource).optional(),
+  listingSource: z.nativeEnum(ListingSource).optional(),
   ownerSingpassVerified: z.boolean().optional(),
-  qualityScoreMin:   z.number().min(0).max(100).optional(),
-  featured:          z.boolean().optional(),
-  sortBy:            SortBy.default('newest'),
-  page:              z.number().int().min(1).default(1),
-  limit:             z.number().int().min(1).max(100).default(20),
+  qualityScoreMin: z.number().min(0).max(100).optional(),
+  featured: z.boolean().optional(),
+  sortBy: SortBy.default('newest'),
+  page: z.number().int().min(1).default(1),
+  limit: z.number().int().min(1).max(100).default(20),
 });
 
 export type PropertyFilters = z.infer<typeof PropertyFiltersSchema>;
@@ -90,11 +90,11 @@ function applyFilters(props: Property[], input: PropertyFilters): Property[] {
     );
   }
 
-  if (input.listingType)            results = results.filter((p) => p.listingType === input.listingType);
-  if (input.propertyType)           results = results.filter((p) => p.propertyType === input.propertyType);
-  if (input.district)               results = results.filter((p) => p.district === input.district);
-  if (input.hdbTown)                results = results.filter((p) => p.hdbTown === input.hdbTown);
-  if (input.hdbRoomType)            results = results.filter((p) => p.hdbRoomType === input.hdbRoomType);
+  if (input.listingType) results = results.filter((p) => p.listingType === input.listingType);
+  if (input.propertyType) results = results.filter((p) => p.propertyType === input.propertyType);
+  if (input.district) results = results.filter((p) => p.district === input.district);
+  if (input.hdbTown) results = results.filter((p) => p.hdbTown === input.hdbTown);
+  if (input.hdbRoomType) results = results.filter((p) => p.hdbRoomType === input.hdbRoomType);
   if (input.priceMin !== undefined) results = results.filter((p) => p.price >= input.priceMin!);
   if (input.priceMax !== undefined) results = results.filter((p) => p.price <= input.priceMax!);
   if (input.bedroomsMin !== undefined) results = results.filter((p) => p.bedrooms >= input.bedroomsMin!);
@@ -103,11 +103,11 @@ function applyFilters(props: Property[], input: PropertyFilters): Property[] {
   if (input.bathroomsMax !== undefined) results = results.filter((p) => p.bathrooms <= input.bathroomsMax!);
   if (input.floorAreaMin !== undefined) results = results.filter((p) => p.floorAreaSqft >= input.floorAreaMin!);
   if (input.floorAreaMax !== undefined) results = results.filter((p) => p.floorAreaSqft <= input.floorAreaMax!);
-  if (input.furnishing)             results = results.filter((p) => p.furnishing === input.furnishing);
-  if (input.tenure)                 results = results.filter((p) => p.tenure === input.tenure);
-  if (input.status)                 results = results.filter((p) => p.status === input.status);
-  if (input.verificationLevel)      results = results.filter((p) => p.verificationLevel === input.verificationLevel);
-  if (input.listingSource)          results = results.filter((p) => p.listingSource === input.listingSource);
+  if (input.furnishing) results = results.filter((p) => p.furnishing === input.furnishing);
+  if (input.tenure) results = results.filter((p) => p.tenure === input.tenure);
+  if (input.status) results = results.filter((p) => p.status === input.status);
+  if (input.verificationLevel) results = results.filter((p) => p.verificationLevel === input.verificationLevel);
+  if (input.listingSource) results = results.filter((p) => p.listingSource === input.listingSource);
   if (input.featured !== undefined) results = results.filter((p) => p.featured === input.featured);
 
   // Filter by owner Singpass verification status
@@ -126,14 +126,14 @@ function applyFilters(props: Property[], input: PropertyFilters): Property[] {
   }
 
   switch (input.sortBy) {
-    case 'price_asc':     results.sort((a, b) => a.price - b.price); break;
-    case 'price_desc':    results.sort((a, b) => b.price - a.price); break;
-    case 'psf_asc':       results.sort((a, b) => (a.psf ?? 0) - (b.psf ?? 0)); break;
-    case 'psf_desc':      results.sort((a, b) => (b.psf ?? 0) - (a.psf ?? 0)); break;
-    case 'most_viewed':   results.sort((a, b) => b.viewsCount - a.viewsCount); break;
+    case 'price_asc': results.sort((a, b) => a.price - b.price); break;
+    case 'price_desc': results.sort((a, b) => b.price - a.price); break;
+    case 'psf_asc': results.sort((a, b) => (a.psf ?? 0) - (b.psf ?? 0)); break;
+    case 'psf_desc': results.sort((a, b) => (b.psf ?? 0) - (a.psf ?? 0)); break;
+    case 'most_viewed': results.sort((a, b) => b.viewsCount - a.viewsCount); break;
     case 'quality_score': results.sort((a, b) => (b.listingQualityScore ?? 0) - (a.listingQualityScore ?? 0)); break;
     case 'newest':
-    default:              results.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    default: results.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
   return results;
@@ -213,9 +213,9 @@ export const propertiesRouter = router({
   getSimilar: publicProcedure
     .input(
       z.object({
-        id:           z.string(),
-        district:     z.string(),
-        maxPrice:     z.number(),
+        id: z.string(),
+        district: z.string(),
+        maxPrice: z.number(),
         propertyType: z.nativeEnum(PropertyType),
       })
     )
@@ -257,10 +257,10 @@ export const propertiesRouter = router({
       }
 
       const requiredDocs: Record<VerificationLevel, string[]> = {
-        [VerificationLevel.Unverified]:        ['Ownership title deed', 'NRIC of owner'],
+        [VerificationLevel.Unverified]: ['Ownership title deed', 'NRIC of owner'],
         [VerificationLevel.OwnershipVerified]: ['Legal docs (SPA or tenancy agreement)'],
         [VerificationLevel.LegalDocsVerified]: ['Final inspection report'],
-        [VerificationLevel.FullyVerified]:     [],
+        [VerificationLevel.FullyVerified]: [],
       };
 
       return {
@@ -346,4 +346,157 @@ export const propertiesRouter = router({
         extractedTags,
       };
     }),
+
+  /**
+   * Get recent comparable transactions near a given postal code.
+   * MOCK: Matches transactions via shared district of properties at the same postal code.
+   */
+  getComparableTransactions: publicProcedure
+    .input(
+      z.object({
+        postalCode: z.string().length(6),
+        propertyType: z.nativeEnum(PropertyType).optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      await new Promise((r) => setTimeout(r, 300));
+
+      // Find properties matching the postal code or same district.
+      const anchorProperties = mockProperties.filter(
+        (p) => p.postalCode === input.postalCode
+      );
+      const anchorDistrict =
+        anchorProperties[0]?.district ??
+        // Fallback: derive district from matching street block or default to D18
+        mockProperties.find((p) => p.postalCode.startsWith(input.postalCode.slice(0, 3)))?.district ??
+        'D18';
+
+      const anchorType = input.propertyType ?? anchorProperties[0]?.propertyType;
+
+      // Get all property IDs in the same district (and optionally same type).
+      const comparablePropertyIds = mockProperties
+        .filter(
+          (p) =>
+            p.district === anchorDistrict &&
+            (anchorType === undefined || p.propertyType === anchorType)
+        )
+        .map((p) => p.id);
+
+      // Filter transactions matching those properties.
+      const rawTransactions = mockTransactions.filter((t) =>
+        comparablePropertyIds.includes(t.propertyId)
+      );
+
+      // Enrich each transaction with property details.
+      const enriched = rawTransactions
+        .map((t) => {
+          const prop = mockProperties.find((p) => p.id === t.propertyId);
+          if (!prop) return null;
+          return {
+            date: t.transactionDate.toISOString(),
+            price: t.price,
+            psf: t.psf,
+            floorArea: prop.floorAreaSqft,
+            floor: prop.floorLevel ?? null,
+            unitNumber: prop.unitNumber ?? null,
+            address: prop.address,
+            propertyId: t.propertyId,
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => new Date(b!.date).getTime() - new Date(a!.date).getTime())
+        .slice(0, 20); // Return at most 20 most recent
+
+      return {
+        district: anchorDistrict,
+        propertyType: anchorType ?? PropertyType.HDB,
+        transactions: enriched,
+      };
+    }),
+
+  /**
+   * Derive an estimated market value range for a property at the given postal code.
+   * MOCK: Uses median PSF from comparable transactions and applies ±5% range.
+   */
+  getPropertyValueEstimate: publicProcedure
+    .input(
+      z.object({
+        postalCode: z.string().length(6),
+        propertyType: z.nativeEnum(PropertyType).optional(),
+        targetFloorArea: z.number().positive().optional(), // sqft, for psf→price extrapolation
+      })
+    )
+    .query(async ({ input }) => {
+      await new Promise((r) => setTimeout(r, 300));
+
+      // Identify district from mock properties.
+      const anchorProp = mockProperties.find((p) => p.postalCode === input.postalCode);
+      const district = anchorProp?.district ?? 'D18';
+      const propType = input.propertyType ?? anchorProp?.propertyType ?? PropertyType.HDB;
+      const floorArea = input.targetFloorArea ?? anchorProp?.floorAreaSqft ?? 1000;
+
+      // Gather PSF values from same-district, same-type transactions.
+      const districtPropIds = mockProperties
+        .filter((p) => p.district === district && p.propertyType === propType)
+        .map((p) => p.id);
+
+      const psfValues = mockTransactions
+        .filter((t) => districtPropIds.includes(t.propertyId) && t.psf > 0)
+        .map((t) => t.psf);
+
+      if (psfValues.length === 0) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Insufficient comparable transactions to estimate value.',
+        });
+      }
+
+      // Compute median PSF.
+      const sorted = [...psfValues].sort((a, b) => a - b);
+      const mid = Math.floor(sorted.length / 2);
+      const medianPsf =
+        sorted.length % 2 === 0
+          ? (sorted[mid - 1] + sorted[mid]) / 2
+          : sorted[mid];
+
+      // Estimate price from medianPsf × floorArea with ±5% range.
+      const estimatedPrice = medianPsf * floorArea;
+      const priceLow = Math.round((estimatedPrice * 0.95) / 1000) * 1000;
+      const priceHigh = Math.round((estimatedPrice * 1.05) / 1000) * 1000;
+      const psfLow = Math.round(medianPsf * 0.95);
+      const psfHigh = Math.round(medianPsf * 1.05);
+
+      // District-wide stats across all types for context.
+      const allDistrictPropIds = mockProperties
+        .filter((p) => p.district === district)
+        .map((p) => p.id);
+      const allDistrictPsf = mockTransactions
+        .filter((t) => allDistrictPropIds.includes(t.propertyId) && t.psf > 0)
+        .map((t) => t.psf);
+      const districtSorted = [...allDistrictPsf].sort((a, b) => a - b);
+      const districtMid = Math.floor(districtSorted.length / 2);
+      const districtMedianPsf =
+        districtSorted.length > 0
+          ? districtSorted.length % 2 === 0
+            ? (districtSorted[districtMid - 1] + districtSorted[districtMid]) / 2
+            : districtSorted[districtMid]
+          : medianPsf;
+
+      const vsDistrictPct = Math.round(((medianPsf - districtMedianPsf) / districtMedianPsf) * 100);
+
+      return {
+        district,
+        propertyType: propType,
+        floorArea,
+        priceLow,
+        priceHigh,
+        psfLow,
+        psfHigh,
+        medianPsf: Math.round(medianPsf),
+        districtMedianPsf: Math.round(districtMedianPsf),
+        vsDistrictPct,
+        comparableCount: psfValues.length,
+      };
+    }),
 });
+

@@ -152,7 +152,7 @@ export function ScenarioSimulator() {
 
                     <div className="flex justify-end mt-6">
                         <Link
-                            href="/calculators"
+                            href="/resources/calculators"
                             className="inline-flex items-center text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors bg-slate-800 px-4 py-2 rounded-lg"
                         >
                             Go to Calculators for exact figures <ChevronRight className="h-4 w-4 ml-1" />

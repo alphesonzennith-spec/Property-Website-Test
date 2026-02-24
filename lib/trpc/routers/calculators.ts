@@ -32,7 +32,7 @@ export const calculatorsRouter = router({
   getRatesForSection: publicProcedure
     .input(
       z.object({
-        section: z.enum(['stampDuty', 'borrowing', 'mortgage', 'cpf', 'propertyTax', 'misc']),
+        section: z.enum(['stampDuty', 'borrowing', 'mortgage', 'cpf', 'propertyTax', 'misc', 'cpfRates', 'maintenanceFees']),
       })
     )
     .query(async ({ input }) => {

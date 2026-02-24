@@ -6,7 +6,7 @@ export default function AffordabilityPage() {
     <main className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
         <p className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-3">
-          CALCULATORS / AFFORDABILITY
+          RESOURCES / CALCULATORS / AFFORDABILITY
         </p>
         <h1 className="text-4xl font-extrabold text-[#1E293B] mb-4">Affordability Planner</h1>
         <CalculatorNav active="affordability" />

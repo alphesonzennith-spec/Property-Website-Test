@@ -19,7 +19,7 @@ const simpleLinks = [
 
 const resourcesLinks = [
   { label: 'Knowledge & Learning', description: 'Guides, rules, and AI scenarios', href: '/learn' },
-  { label: 'Calculators', description: 'M-Value, Stamp Duty, TDSR & more', href: '/calculators' },
+  { label: 'Calculators', description: 'M-Value, Stamp Duty, TDSR & more', href: '/resources/calculators' },
 ];
 
 const residentialLinks = [

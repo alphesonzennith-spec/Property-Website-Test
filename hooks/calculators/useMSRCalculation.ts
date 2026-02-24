@@ -9,9 +9,16 @@ export function useMSRCalculation() {
   const { data: borrowingConfig, isLoading, error } = useRegulatorySection('borrowing');
   const { data: mortgageConfig } = useRegulatorySection('mortgage');
 
-  // Income state
+  // Purchase status (single / joint)
+  const [purchaseStatus, setPurchaseStatus] = useState<'single' | 'joint'>('single');
+
+  // Income state — main applicant
   const [fixedIncome, setFixedIncome] = useState<number>(0);
   const [variableIncome, setVariableIncome] = useState<number>(0);
+
+  // Income state — joint applicant (only used when purchaseStatus === 'joint')
+  const [fixedIncomeJoint, setFixedIncomeJoint] = useState<number>(0);
+  const [variableIncomeJoint, setVariableIncomeJoint] = useState<number>(0);
 
   // Property type
   const [propertyType, setPropertyType] = useState<PropertyType>(PropertyType.HDB);
@@ -27,8 +34,10 @@ export function useMSRCalculation() {
     }
   }, [mortgageConfig]);
 
-  // Total income
-  const totalIncome = fixedIncome + variableIncome;
+  // Total income — joint adds both applicants' incomes
+  const totalIncome = purchaseStatus === 'joint'
+    ? fixedIncome + variableIncome + fixedIncomeJoint + variableIncomeJoint
+    : fixedIncome + variableIncome;
 
   // MSR Calculation
   const msrResult = useMemo(() => {
@@ -64,18 +73,27 @@ export function useMSRCalculation() {
     );
   }, [borrowingConfig, totalIncome, propertyType, stressTestRate, loanTenureYears]);
 
-  // Monthly mortgage limit
-  const monthlyMortgageLimit = (maxLoanAmount as any)?.monthlyRepayment ?? 0;
+  // Monthly mortgage limit = MSR-capped max monthly repayment
+  // getMaxLoanAmount does NOT return monthlyRepayment — derive directly from income × MSR limit
+  const monthlyMortgageLimit = totalIncome > 0 && borrowingConfig && 'msr' in borrowingConfig
+    ? Math.round(totalIncome * borrowingConfig.msr.limit)
+    : 0;
 
   // MSR limit from config
   const msrLimit = borrowingConfig && 'msr' in borrowingConfig ? borrowingConfig.msr.limit * 100 : 30;
 
   return {
     // State
+    purchaseStatus,
+    setPurchaseStatus,
     fixedIncome,
     setFixedIncome,
     variableIncome,
     setVariableIncome,
+    fixedIncomeJoint,
+    setFixedIncomeJoint,
+    variableIncomeJoint,
+    setVariableIncomeJoint,
     propertyType,
     setPropertyType,
     stressTestRate,

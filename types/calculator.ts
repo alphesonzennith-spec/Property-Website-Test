@@ -226,39 +226,71 @@ export interface ProgressivePaymentOutput {
 
 export interface TotalCostOwnershipInput {
   purchasePrice: number;
+  propertyType: PropertyType;
+  /** Floor area in square feet — used for condo maintenance fee estimate */
+  floorAreaSqft: number;
+  /** "owner-occupied" or "investment" */
+  usage: 'owner-occupied' | 'investment';
   loanAmount: number;
   annualInterestRatePct: number;
   loanTenureYears: number;
+  /** Intended holding period in years */
+  holdingPeriodYears: 5 | 10 | 20;
   buyerResidencyStatus: ResidencyStatus;
   existingPropertiesOwned: number;
-  propertyType: PropertyType;
-  /** Annual property tax in SGD */
-  annualPropertyTax: number;
-  /** Annual MCST maintenance fees or estate charges in SGD */
-  annualMaintenanceFees: number;
-  /** Intended holding period in years */
-  holdingPeriodYears: number;
-  /** Expected annual capital appreciation rate as a percentage */
-  expectedAppreciationPct: number;
+  /** Expected monthly rental income in SGD (investment only) */
+  monthlyRentalIncome?: number;
 }
 
 export interface TotalCostOwnershipOutput {
+  // One-time costs
   purchasePrice: number;
-  stampDuty: number;
-  totalMortgageRepayment: number;
-  totalInterestPaid: number;
+  bsd: number;
+  absd: number;
+  totalStampDuty: number;
+  /** Midpoint of the legal fee estimate range */
+  legalFeesEstimate: number;
+  valuationFee: number;
+  totalOneTimeCosts: number;
+
+  // Annual recurring (each year)
+  annualPropertyTax: number;
+  annualMaintenanceFeesMid: number;
+  annualInsuranceMid: number;
+
+  // Total recurring over holding period
   totalPropertyTax: number;
   totalMaintenanceFees: number;
-  /** Estimated legal and conveyancing fees in SGD */
-  legalAndConveyancingFees: number;
-  /** Grand total of all costs incurred over the holding period */
+  totalInsurance: number;
+  totalMortgageInterest: number;
+
+  // Opportunity cost
+  opportunityCostTotal: number;
+  /** CPF SA rate used for opportunity cost calculation */
+  cpfSaRateUsed: number;
+
+  // Grand totals
   grandTotalCost: number;
-  /** Projected sale price after the holding period based on expected appreciation */
-  projectedSalePrice: number;
-  /** Net capital gain or loss in SGD after all costs */
-  netGainLoss: number;
-  /** Annualised return on equity as a percentage */
-  annualisedReturnPct: number;
+
+  // Investment-only (undefined when owner-occupied)
+  totalRentalIncome?: number;
+  netCostAfterRental?: number;
+  grossRentalYieldPct?: number;
+  netRentalYieldPct?: number;
+  /** Breakeven sale price to recoup all costs */
+  breakevenSalePrice?: number;
+
+  // Per-year data for chart
+  yearlyBreakdown: Array<{
+    year: number;
+    mortgageInterest: number;
+    propertyTax: number;
+    maintenanceFees: number;
+    insurance: number;
+    opportunityCost: number;
+    rentalIncome: number;
+    cumulativeCost: number;
+  }>;
 }
 
 // ── Property Market Value ─────────────────────────────────────────────────────

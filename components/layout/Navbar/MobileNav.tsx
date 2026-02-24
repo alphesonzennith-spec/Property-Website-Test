@@ -120,7 +120,8 @@ export function MobileNav() {
             { label: 'New Launches', href: '/residential/buy?type=new-launches' },
             { label: 'Directory', href: '/directory' },
             { label: 'News', href: '/news' },
-            { label: 'Resources', href: '/resources' },
+            { label: 'Calculators', href: '/resources/calculators' },
+            { label: 'Knowledge Base', href: '/learn' },
           ].map((link) => (
             <Link
               key={link.href}

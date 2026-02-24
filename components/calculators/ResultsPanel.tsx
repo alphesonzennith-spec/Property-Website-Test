@@ -20,7 +20,7 @@ export function ResultsPanel({ title, results }: ResultsPanelProps) {
             <span
               className={
                 result.highlight
-                  ? 'text-2xl font-bold text-blue-600'
+                  ? 'text-2xl font-bold text-emerald-600'
                   : 'text-lg font-semibold text-gray-900'
               }
             >

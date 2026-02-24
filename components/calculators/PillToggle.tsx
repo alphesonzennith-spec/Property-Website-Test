@@ -19,7 +19,7 @@ export function PillToggle({ value, onChange, options }: PillToggleProps) {
           className={`
             px-6 py-2 rounded-full transition-all duration-200 text-sm font-medium
             ${value === option.value
-              ? 'bg-blue-600 text-white'
+              ? 'bg-emerald-600 text-white'
               : 'bg-transparent text-gray-700 hover:text-gray-900'
             }
           `}

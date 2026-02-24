@@ -23,6 +23,7 @@ export function useTDSRCalculation() {
   const [carLoan, setCarLoan] = useState<number>(0);
   const [otherHomeLoans, setOtherHomeLoans] = useState<number>(0);
   const [otherLoans, setOtherLoans] = useState<number>(0);
+  const [otherLoans2, setOtherLoans2] = useState<number>(0); // joint applicant debts
 
   // Loan parameters
   const [stressTestRate, setStressTestRate] = useState<number>(0);
@@ -47,8 +48,9 @@ export function useTDSRCalculation() {
   // Total income
   const totalIncome = totalFixedIncome + totalVariableIncome;
 
-  // Calculate total monthly debts
-  const totalDebts = creditCardDebts + carLoan + otherHomeLoans + otherLoans;
+  // Calculate total monthly debts (main + joint when applicable)
+  const totalDebts = creditCardDebts + carLoan + otherHomeLoans + otherLoans +
+    (applicantMode === 'joint' ? otherLoans2 : 0);
 
   // Calculate effective income (apply haircut to variable portion)
   const effectiveIncome = useMemo(() => {
@@ -93,8 +95,11 @@ export function useTDSRCalculation() {
     );
   }, [borrowingConfig, effectiveIncome, totalDebts, stressTestRate, loanTenureYears]);
 
-  // Monthly mortgage limit
-  const monthlyMortgageLimit = (maxLoanAmount as any)?.monthlyRepayment ?? 0;
+  // Monthly mortgage limit = TDSR headroom after existing debts
+  // getMaxLoanAmount does NOT return monthlyRepayment — derive directly
+  const monthlyMortgageLimit = borrowingConfig && 'tdsr' in borrowingConfig && effectiveIncome > 0
+    ? Math.max(0, Math.round(effectiveIncome * borrowingConfig.tdsr.limit - totalDebts))
+    : 0;
 
   // TDSR limit from config
   const tdsrLimit = borrowingConfig && 'tdsr' in borrowingConfig ? borrowingConfig.tdsr.limit * 100 : 55;
@@ -119,6 +124,8 @@ export function useTDSRCalculation() {
     setOtherHomeLoans,
     otherLoans,
     setOtherLoans,
+    otherLoans2,
+    setOtherLoans2,
     stressTestRate,
     setStressTestRate,
     loanTenureYears,

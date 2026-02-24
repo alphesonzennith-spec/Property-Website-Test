@@ -31,6 +31,8 @@ export default function TDSRCalculatorPage() {
     setOtherHomeLoans,
     otherLoans,
     setOtherLoans,
+    otherLoans2,
+    setOtherLoans2,
 
     // Computed
     totalIncome,
@@ -97,8 +99,8 @@ export default function TDSRCalculatorPage() {
     <main className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
-        <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2">
-          CALCULATORS / TDSR
+        <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wide mb-2">
+          RESOURCES / CALCULATORS / TDSR
         </p>
         <h1 className="text-3xl font-bold text-gray-900 mb-3">
           Total Debt Servicing Ratio (TDSR) Calculator
@@ -153,16 +155,15 @@ export default function TDSRCalculatorPage() {
               <InputRow
                 label="Monthly loans & debts"
                 mainValue={creditCardDebts + carLoan + otherHomeLoans + otherLoans || ''}
-                jointValue={0}
+                jointValue={otherLoans2 || ''}
                 onMainChange={(val) => {
-                  // For simplicity, set all debt to creditCardDebts
                   setCreditCardDebts(val);
                   setCarLoan(0);
                   setOtherHomeLoans(0);
                   setOtherLoans(0);
                 }}
-                onJointChange={() => {}}
-                jointDisabled={true}
+                onJointChange={(val) => setOtherLoans2(val)}
+                jointDisabled={isSingle}
               />
             </div>
 
