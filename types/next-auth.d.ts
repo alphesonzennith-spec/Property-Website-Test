@@ -1,4 +1,4 @@
-import { SingpassVerification, VerificationBadge } from './user'
+import type { SingpassVerification, VerificationBadge } from './user'
 
 declare module 'next-auth' {
   interface Session {
@@ -7,8 +7,8 @@ declare module 'next-auth' {
       email: string
       name?: string
       image?: string
-      singpassVerification: SingpassVerification
-      verificationBadges: VerificationBadge[]
+      singpassVerification?: SingpassVerification
+      verificationBadges?: VerificationBadge[]
     }
   }
 
