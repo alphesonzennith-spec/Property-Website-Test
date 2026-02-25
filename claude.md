@@ -392,6 +392,79 @@ onChange={(e) => setFilter('fieldName', e.target.value === '' ? undefined : Numb
 
 ---
 
+## API Response Shape Contract
+
+All tRPC procedures follow these shapes. Deviating from these will break frontend consumers and violate the standardization contract.
+
+### List Procedures (paginated)
+```typescript
+{
+  data: NormalizedDates<T>[];  // ← array key is always 'data', NOT 'items'
+  total: number;               // total count (unpaginated, pre-filter)
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+```
+Implemented via `createPaginatedResponse()` from `lib/trpc/routers/paginationSchema.ts`.
+
+### Non-Paginated List Procedures
+```typescript
+{ data: T[] }  // always wrap arrays in { data }, never return a raw array
+```
+
+### getById Procedures
+```typescript
+T  // return the item directly, or throw TRPCError NOT_FOUND — never return null
+```
+
+### Create/Update Mutations
+```typescript
+{ success: boolean; data: T }
+```
+
+### Delete Mutations
+```typescript
+{ success: boolean; id: string }
+```
+
+### Specialized Queries (getVerificationStatus, getEligibilityDashboard, etc.)
+```typescript
+{ data: T }  // always wrap in { data } for consistency
+```
+
+---
+
+### Date Normalization
+
+Always call `normalizeDates()` from `lib/utils/dateTransformers.ts` before returning any object containing `Date` fields (from mock data or Supabase). Supabase returns ISO strings natively; `normalizeDates()` is a no-op on strings, so it is safe to call unconditionally.
+
+```typescript
+import { normalizeDates } from '@/lib/utils/dateTransformers';
+return normalizeDates(result);
+```
+
+### SUPABASE Comment Pattern
+
+Every `// MOCK:` comment must be accompanied by a `/* SUPABASE: ... */` block describing the exact Supabase query that replaces the mock:
+
+```typescript
+// MOCK: Replace with Supabase query
+/* SUPABASE:
+const { data: result, error } = await supabase
+  .from('table')
+  .select(FIELD_CONSTANTS)
+  .eq('column', value)
+  .single();
+
+handleSupabaseError(error);
+*/
+```
+
+Use `handleSupabaseError`, `paginationParams`, `buildSearchQuery`, and `snakeToCamel` from `lib/utils/supabaseHelpers.ts`.
+
+---
+
 ## Testing Checklist
 
 ### Manual Tests
