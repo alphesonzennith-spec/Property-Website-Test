@@ -7,7 +7,7 @@ import { MyInfoPersonResponse } from '../singpass/types'
 
 export function createSingpassProvider(useMock: boolean): OAuthConfig<MyInfoPersonResponse> {
   // SINGPASS_SWAP: Switch between mock and production client
-  const client = useMock ? new MockSingpassClient() : new SingpassClient()
+  const getClient = () => useMock ? new MockSingpassClient() : new SingpassClient()
 
   return {
     id: 'singpass',
@@ -25,7 +25,7 @@ export function createSingpassProvider(useMock: boolean): OAuthConfig<MyInfoPers
 
         // Store verifier for token exchange (NextAuth handles this internally)
         return {
-          url: client.getAuthorizationUrl(codeChallenge, state),
+          url: getClient().getAuthorizationUrl(codeChallenge, state),
           state,
           codeVerifier,
         }
@@ -37,7 +37,7 @@ export function createSingpassProvider(useMock: boolean): OAuthConfig<MyInfoPers
 
     token: {
       url: async (params: any) => {
-        const tokens = await client.exchangeCodeForToken(
+        const tokens = await getClient().exchangeCodeForToken(
           params.code,
           params.codeVerifier
         )
@@ -76,7 +76,7 @@ export function createSingpassProvider(useMock: boolean): OAuthConfig<MyInfoPers
           throw new Error('Missing access token from Singpass')
         }
 
-        const idClaims = await client.verifyIdToken(tokens.id_token)
+        const idClaims = await getClient().verifyIdToken(tokens.id_token)
         return fetchMyInfoData(tokens.access_token, idClaims.sub)
       },
     },

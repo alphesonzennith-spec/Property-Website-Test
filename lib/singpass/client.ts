@@ -15,13 +15,11 @@ export class SingpassClient {
     this.redirectUri = process.env.SINGPASS_REDIRECT_URI!
     this.authUrl = process.env.SINGPASS_AUTH_URL || 'https://stg-id.singpass.gov.sg/authorize'
     this.tokenUrl = process.env.SINGPASS_TOKEN_URL || 'https://stg-id.singpass.gov.sg/token'
-
-    this.validateConfig()
   }
 
   private validateConfig() {
     if (!this.clientId || !this.clientSecret || !this.redirectUri) {
-      throw new Error('Singpass environment variables not configured')
+      console.warn('Singpass environment variables not configured. Please check .env.local.')
     }
   }
 

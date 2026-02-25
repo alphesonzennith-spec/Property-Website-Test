@@ -8,6 +8,7 @@ import type { SingpassVerification, VerificationBadge } from '@/types/user'
 const useMockSingpass = process.env.USE_MOCK_SINGPASS === 'true'
 
 export const authOptions: NextAuthConfig = {
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
   providers: [
     createSingpassProvider(useMockSingpass),
   ],
