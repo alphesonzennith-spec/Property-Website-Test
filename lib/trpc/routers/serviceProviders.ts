@@ -4,6 +4,7 @@ import { TRPCError } from '@trpc/server';
 import { router, publicProcedure } from '../trpc';
 import { mockServiceProviders } from '@/lib/mock';
 import { ServiceProviderType } from '@/types';
+import { paginationSchema, createPaginatedResponse, getPaginationRange } from './paginationSchema';
 
 export const serviceProvidersRouter = router({
 
@@ -12,14 +13,31 @@ export const serviceProvidersRouter = router({
     .input(
       z.object({
         type: z.nativeEnum(ServiceProviderType).optional(),
-      }).optional()
+      }).merge(paginationSchema)
     )
     .query(async ({ input }) => {
-      // MOCK: Replace with Supabase query — SELECT * FROM service_providers WHERE type = $1
+      // MOCK: Replace with Supabase query:
+      // const { data, count } = await supabase
+      //   .from('service_providers')
+      //   .select(SERVICE_PROVIDER_LIST_FIELDS, { count: 'exact' })
+      //   .eq('type', input.type)
+      //   .range(start, end)
+      //   .order('rating', { ascending: false })
       await new Promise((r) => setTimeout(r, 250));
 
-      if (!input?.type) return mockServiceProviders;
-      return mockServiceProviders.filter((sp) => sp.type === input.type);
+      const filtered = input.type
+        ? mockServiceProviders.filter((sp) => sp.type === input.type)
+        : mockServiceProviders;
+
+      const { start, end } = getPaginationRange(input.page, input.limit);
+      const paginated = filtered.slice(start, end + 1);
+
+      return createPaginatedResponse(
+        paginated,
+        filtered.length,
+        input.page,
+        input.limit
+      );
     }),
 
   /** Fetch a single service provider's full profile. */

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { router, publicProcedure } from '../trpc';
 import { mockUsers, mockFamilies, mockProperties } from '@/lib/mock';
+import { paginationSchema, createPaginatedResponse, getPaginationRange } from './paginationSchema';
 
 export const usersRouter = router({
 
@@ -75,9 +76,16 @@ export const usersRouter = router({
 
   /** Return all properties owned, renting, or previously transacted by a user. */
   getPortfolio: publicProcedure
-    .input(z.object({ userId: z.string() }))
+    .input(
+      z.object({ userId: z.string().uuid() }).merge(paginationSchema)
+    )
     .query(async ({ input }) => {
-      // MOCK: Replace with Supabase query — SELECT * FROM properties WHERE owner_id = $1 UNION transactions lookup
+      // MOCK: Replace with Supabase query:
+      // const { data: owned, count } = await supabase
+      //   .from('properties')
+      //   .select(PROPERTY_CARD_FIELDS, { count: 'exact' })
+      //   .eq('owner_id', input.userId)
+      //   .range(start, end)
       // SINGPASS: Add Singpass verification check here — verify caller is the portfolio owner or Admin
       await new Promise((r) => setTimeout(r, 250));
 
@@ -86,7 +94,12 @@ export const usersRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: `User ${input.userId} not found.` });
       }
 
-      const owned  = mockProperties.filter((p) => p.ownerId === input.userId);
+      // Paginate owned properties (typically the largest list)
+      const allOwned = mockProperties.filter((p) => p.ownerId === input.userId);
+      const { start, end } = getPaginationRange(input.page, input.limit);
+      const paginatedOwned = allOwned.slice(start, end + 1);
+
+      // Transaction histories remain unpaginated (typically small lists for display)
       const bought = user.buyHistory
         .map((tx) => mockProperties.find((p) => p.id === tx.propertyId))
         .filter((p): p is NonNullable<typeof p> => p !== undefined);
@@ -98,7 +111,12 @@ export const usersRouter = router({
         .filter((p): p is NonNullable<typeof p> => p !== undefined);
 
       return {
-        owned,
+        owned: createPaginatedResponse(
+          paginatedOwned,
+          allOwned.length,
+          input.page,
+          input.limit
+        ),
         bought,
         sold,
         rented,

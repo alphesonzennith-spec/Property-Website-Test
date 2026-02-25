@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { router, publicProcedure } from '../trpc';
 import { mockProperties, mockUsers, mockAgents, mockTransactions } from '@/lib/mock';
+import { paginationSchema, createPaginatedResponse, getPaginationRange } from './paginationSchema';
 import {
   PropertyType,
   ListingType,
@@ -213,9 +214,9 @@ export const propertiesRouter = router({
   getSimilar: publicProcedure
     .input(
       z.object({
-        id: z.string(),
-        district: z.string(),
-        maxPrice: z.number(),
+        id: z.string().uuid(),
+        district: z.string().min(1),
+        maxPrice: z.number().positive(),
         propertyType: z.nativeEnum(PropertyType),
       })
     )
@@ -236,12 +237,28 @@ export const propertiesRouter = router({
 
   /** Return all properties listed by a specific owner. */
   getByOwner: publicProcedure
-    .input(z.object({ ownerId: z.string() }))
+    .input(
+      z.object({ ownerId: z.string().uuid() }).merge(paginationSchema)
+    )
     .query(async ({ input }) => {
-      // MOCK: Replace with Supabase query — SELECT * FROM properties WHERE owner_id = $1
+      // MOCK: Replace with Supabase query:
+      // const { data, count } = await supabase
+      //   .from('properties')
+      //   .select(PROPERTY_CARD_FIELDS, { count: 'exact' })
+      //   .eq('owner_id', input.ownerId)
+      //   .range(start, end)
       await new Promise((r) => setTimeout(r, 250));
 
-      return mockProperties.filter((p) => p.ownerId === input.ownerId);
+      const ownerProperties = mockProperties.filter((p) => p.ownerId === input.ownerId);
+      const { start, end } = getPaginationRange(input.page, input.limit);
+      const paginatedProperties = ownerProperties.slice(start, end + 1);
+
+      return createPaginatedResponse(
+        paginatedProperties,
+        ownerProperties.length,
+        input.page,
+        input.limit
+      );
     }),
 
   /** Return verification level and required documents for a listing. */
@@ -356,7 +373,7 @@ export const propertiesRouter = router({
       z.object({
         postalCode: z.string().length(6),
         propertyType: z.nativeEnum(PropertyType).optional(),
-      })
+      }).merge(paginationSchema)
     )
     .query(async ({ input }) => {
       await new Promise((r) => setTimeout(r, 300));
@@ -388,7 +405,7 @@ export const propertiesRouter = router({
       );
 
       // Enrich each transaction with property details.
-      const enriched = rawTransactions
+      const allEnriched = rawTransactions
         .map((t) => {
           const prop = mockProperties.find((p) => p.id === t.propertyId);
           if (!prop) return null;
@@ -404,13 +421,21 @@ export const propertiesRouter = router({
           };
         })
         .filter(Boolean)
-        .sort((a, b) => new Date(b!.date).getTime() - new Date(a!.date).getTime())
-        .slice(0, 20); // Return at most 20 most recent
+        .sort((a, b) => new Date(b!.date).getTime() - new Date(a!.date).getTime());
+
+      // Apply pagination
+      const { start, end } = getPaginationRange(input.page, input.limit);
+      const paginatedTransactions = allEnriched.slice(start, end + 1);
 
       return {
         district: anchorDistrict,
         propertyType: anchorType ?? PropertyType.HDB,
-        transactions: enriched,
+        ...createPaginatedResponse(
+          paginatedTransactions,
+          allEnriched.length,
+          input.page,
+          input.limit
+        ),
       };
     }),
 

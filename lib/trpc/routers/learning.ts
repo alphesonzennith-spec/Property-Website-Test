@@ -4,6 +4,7 @@ import { TRPCError } from '@trpc/server';
 import { router, publicProcedure, protectedProcedure } from '../trpc';
 import { mockLearningModules } from '@/lib/mock';
 import { LearningCategory } from '@/types';
+import { paginationSchema, createPaginatedResponse, getPaginationRange } from './paginationSchema';
 
 // ── In-memory completion store ────────────────────────────────────────────────
 // MOCK: Replace with Supabase query — INSERT INTO user_module_completions (user_id, module_id, completed_at)
@@ -17,14 +18,31 @@ export const learningRouter = router({
     .input(
       z.object({
         category: z.nativeEnum(LearningCategory).optional(),
-      }).optional()
+      }).merge(paginationSchema)
     )
     .query(async ({ input }) => {
-      // MOCK: Replace with Supabase query — SELECT * FROM learning_modules WHERE category = $1 ORDER BY completion_count DESC
+      // MOCK: Replace with Supabase query:
+      // const { data, count } = await supabase
+      //   .from('learning_modules')
+      //   .select(LEARNING_MODULE_LIST_FIELDS, { count: 'exact' })
+      //   .eq('category', input.category)
+      //   .range(start, end)
+      //   .order('order_index', { ascending: true })
       await new Promise((r) => setTimeout(r, 250));
 
-      if (!input?.category) return mockLearningModules;
-      return mockLearningModules.filter((m) => m.category === input.category);
+      const filtered = input.category
+        ? mockLearningModules.filter((m) => m.category === input.category)
+        : mockLearningModules;
+
+      const { start, end } = getPaginationRange(input.page, input.limit);
+      const paginated = filtered.slice(start, end + 1);
+
+      return createPaginatedResponse(
+        paginated,
+        filtered.length,
+        input.page,
+        input.limit
+      );
     }),
 
   /** Fetch a single learning module's full content by ID. */
