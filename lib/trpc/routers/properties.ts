@@ -289,8 +289,8 @@ export const propertiesRouter = router({
   parseNaturalLanguageQuery: publicProcedure
     .input(z.object({ query: z.string() }))
     .mutation(async ({ input }) => {
-      // MOCK: Replace with actual AI/NLP service when ready
-      // TODO: Document in claude.md - integrate with AI service for production
+      // AI_SERVICE: Replace with actual AI/NLP service for production
+      // MOCK: Artificial delay simulating AI processing
       await new Promise((r) => setTimeout(r, 250));
 
       const query = input.query.toLowerCase();

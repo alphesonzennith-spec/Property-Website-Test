@@ -46,8 +46,7 @@ export interface SingpassVerificationRecord {
     failureReason?: string;
 }
 
-// SINGPASS_SWAP: Mock MyInfo profiles simulating API responses
-// Replace with real MyInfo API call in /lib/singpass/client.ts
+// SINGPASS_SWAP: Mock MyInfo profiles simulating API responses - replace with real MyInfo API
 // Each profile maps to a user in /lib/mock/users.ts by userId
 
 export const MOCK_MYINFO_PROFILES: Record<string, MyInfoData> = {
@@ -221,8 +220,8 @@ export const MOCK_MYINFO_PROFILES: Record<string, MyInfoData> = {
 };
 
 // SINGPASS_SWAP: Mock verification states for testing all UI states
-// Real states are written to Supabase after Singpass OAuth callback
-// Supabase table: user_singpass_verification (created in Phase 5.1)
+// SUPABASE: Real verification states written after Singpass OAuth callback
+// SUPABASE: Create user_singpass_verification table schema
 
 export const MOCK_VERIFICATION_STATES: Record<string, SingpassVerificationRecord> = {
     "user_sc_first_time": {

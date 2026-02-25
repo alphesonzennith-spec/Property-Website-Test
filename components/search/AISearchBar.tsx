@@ -33,7 +33,6 @@ export function AISearchBar() {
 
   const handleRemoveTag = (tag: string) => {
     removeAiTag(tag);
-    // TODO: Update filters when tag removed (future enhancement)
   };
 
   return (
