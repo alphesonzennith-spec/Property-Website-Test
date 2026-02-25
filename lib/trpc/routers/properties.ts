@@ -5,7 +5,7 @@ import { router, publicProcedure } from '../trpc';
 import { mockProperties, mockUsers, mockAgents, mockTransactions } from '@/lib/mock';
 import { paginationSchema, createPaginatedResponse, getPaginationRange } from './paginationSchema';
 import { withMockControl, applyEdgeCases } from '@/lib/mock/mockControls';
-import { normalizeDates } from '@/lib/utils/dateTransformers';
+import { normalizeDates, NormalizedDates } from '@/lib/utils/dateTransformers';
 import {
   PropertyType,
   ListingType,
@@ -67,7 +67,7 @@ const PropertyFiltersSchema = z.object({
 export type PropertyFilters = z.infer<typeof PropertyFiltersSchema>;
 
 export interface PropertySearchResponse {
-  data: Property[];
+  data: NormalizedDates<Property>[];
   total: number;
   page: number;
   limit: number;
@@ -170,7 +170,7 @@ export const propertiesRouter = router({
           page: input.page,
           limit: input.limit,
           totalPages,
-        } as unknown as PropertySearchResponse;
+        } satisfies PropertySearchResponse;
       });
     }),
 

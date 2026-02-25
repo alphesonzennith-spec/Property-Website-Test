@@ -112,7 +112,7 @@ export const usersRouter = router({
         .map((tx) => mockProperties.find((p) => p.id === tx.propertyId))
         .filter((p): p is NonNullable<typeof p> => p !== undefined);
 
-      return {
+      return normalizeDates({
         owned: createPaginatedResponse(
           paginatedOwned,
           allOwned.length,
@@ -125,6 +125,6 @@ export const usersRouter = router({
         buyHistory:  user.buyHistory,
         sellHistory: user.sellHistory,
         rentHistory: user.rentHistory,
-      };
+      });
     }),
 });
