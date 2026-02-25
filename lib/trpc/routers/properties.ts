@@ -158,6 +158,24 @@ export const propertiesRouter = router({
     .input(PropertyFiltersSchema)
     .query(async ({ input }) => {
       // MOCK: Replace with Supabase query — SELECT * FROM properties WHERE ...
+      /* SUPABASE:
+      const { from, to } = paginationParams(input.page, input.limit);
+      let query = supabase
+        .from('properties')
+        .select(PROPERTY_LIST_FIELDS, { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      if (input.propertyType) query = query.eq('property_type', input.propertyType);
+      if (input.district) query = query.eq('district', input.district);
+      if (input.priceMin) query = query.gte('price', input.priceMin);
+      if (input.priceMax) query = query.lte('price', input.priceMax);
+      if (input.bedroomsMin) query = query.gte('bedrooms', input.bedroomsMin);
+      if (input.keyword) query = query.ilike('address', `%${input.keyword}%`);
+
+      const { data: result, error, count } = await query;
+      handleSupabaseError(error);
+      */
       return withMockControl('failPropertiesList', () => {
         const filtered = applyFilters(mockProperties, input);
         const { items, total, totalPages } = paginate(filtered, input.page, input.limit);
@@ -179,6 +197,16 @@ export const propertiesRouter = router({
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
       // MOCK: Replace with Supabase query — SELECT * FROM properties WHERE id = $1
+      /* SUPABASE:
+      const { data: result, error } = await supabase
+        .from('properties')
+        .select(`${PROPERTY_DETAIL_FIELDS}, agents(id, cea_number, agency_name, ratings), users!owner_id(id, singpass_verified)`)
+        .eq('id', input.id)
+        .single();
+
+      if (error) throw new TRPCError({ code: 'NOT_FOUND', message: `Property ${input.id} not found.` });
+      handleSupabaseError(error);
+      */
       return withMockControl('failPropertyDetail', () => {
         const property = mockProperties.find((p) => p.id === input.id);
         if (!property) {
@@ -209,6 +237,17 @@ export const propertiesRouter = router({
   getFeatured: publicProcedure
     .query(async () => {
       // MOCK: Replace with Supabase query — SELECT * FROM properties WHERE featured = true AND status = 'Active' LIMIT 8
+      /* SUPABASE:
+      const { data: result, error } = await supabase
+        .from('properties')
+        .select(PROPERTY_CARD_FIELDS)
+        .eq('featured', true)
+        .eq('status', 'Active')
+        .order('created_at', { ascending: false })
+        .limit(8);
+
+      handleSupabaseError(error);
+      */
       return withMockControl('failPropertiesList', () => {
         const data = mockProperties
           .filter((p) => p.featured && p.status === PropertyStatus.Active)
@@ -229,6 +268,19 @@ export const propertiesRouter = router({
     )
     .query(async ({ input }) => {
       // MOCK: Replace with Supabase query — SELECT * FROM properties WHERE district = $1 AND property_type = $2 AND price <= $3 AND id != $4 LIMIT 4
+      /* SUPABASE:
+      const { data: result, error } = await supabase
+        .from('properties')
+        .select(PROPERTY_CARD_FIELDS)
+        .eq('district', input.district)
+        .eq('property_type', input.propertyType)
+        .lte('price', input.maxPrice)
+        .neq('id', input.id)
+        .order('price', { ascending: false })
+        .limit(4);
+
+      handleSupabaseError(error);
+      */
       return withMockControl('failPropertiesList', () => {
         const data = mockProperties
           .filter(
@@ -255,6 +307,17 @@ export const propertiesRouter = router({
       //   .select(PROPERTY_CARD_FIELDS, { count: 'exact' })
       //   .eq('owner_id', input.ownerId)
       //   .range(start, end)
+      /* SUPABASE:
+      const { from, to } = paginationParams(input.page, input.limit);
+      const { data: result, error, count } = await supabase
+        .from('properties')
+        .select(PROPERTY_CARD_FIELDS, { count: 'exact' })
+        .eq('owner_id', input.ownerId)
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      handleSupabaseError(error);
+      */
       return withMockControl('failPropertiesList', () => {
         const ownerProperties = mockProperties.filter((p) => p.ownerId === input.ownerId);
         const { start, end } = getPaginationRange(input.page, input.limit);
@@ -276,6 +339,16 @@ export const propertiesRouter = router({
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
       // MOCK: Replace with Supabase query — SELECT verification_level, ownership_doc_url, legal_doc_urls FROM properties WHERE id = $1
+      /* SUPABASE:
+      const { data: result, error } = await supabase
+        .from('properties')
+        .select('id, verification_level, ownership_doc_url, legal_doc_urls')
+        .eq('id', input.id)
+        .single();
+
+      if (error) throw new TRPCError({ code: 'NOT_FOUND', message: `Property ${input.id} not found.` });
+      handleSupabaseError(error);
+      */
       await new Promise((r) => setTimeout(r, 250));
 
       const property = mockProperties.find((p) => p.id === input.id);
@@ -304,6 +377,19 @@ export const propertiesRouter = router({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       // MOCK: Replace with Supabase query — UPDATE properties SET views_count = views_count + 1 WHERE id = $1
+      /* SUPABASE:
+      const { data: result, error } = await supabase.rpc('increment_property_views', {
+        property_id: input.id
+      });
+
+      handleSupabaseError(error);
+      // Note: Create Supabase function:
+      // CREATE FUNCTION increment_property_views(property_id uuid)
+      // RETURNS int AS $$
+      //   UPDATE properties SET views_count = views_count + 1 WHERE id = property_id
+      //   RETURNING views_count;
+      // $$ LANGUAGE sql;
+      */
       if (!mockProperties.some((p) => p.id === input.id)) {
         throw new TRPCError({ code: 'NOT_FOUND', message: `Property ${input.id} not found.` });
       }
@@ -321,6 +407,11 @@ export const propertiesRouter = router({
     .mutation(async ({ input }) => {
       // AI_SERVICE: Replace with actual AI/NLP service for production
       // MOCK: Artificial delay simulating AI processing
+      /* SUPABASE:
+      // Replace with call to AI service (e.g., OpenAI function calling or Claude tool use)
+      // to parse natural language into structured PropertyFilters.
+      // const result = await aiClient.parsePropertyQuery(input.query);
+      */
       await new Promise((r) => setTimeout(r, 250));
 
       const query = input.query.toLowerCase();
@@ -389,6 +480,17 @@ export const propertiesRouter = router({
       }).merge(paginationSchema)
     )
     .query(async ({ input }) => {
+      /* SUPABASE:
+      const { from, to } = paginationParams(input.page, input.limit);
+      const { data: result, error, count } = await supabase
+        .from('transactions')
+        .select(`${TRANSACTION_HISTORY_FIELDS}, properties!inner(address, floor_area_sqft, floor_level, unit_number, district, property_type)`, { count: 'exact' })
+        .eq('properties.district', anchorDistrict)
+        .order('transaction_date', { ascending: false })
+        .range(from, to);
+
+      handleSupabaseError(error);
+      */
       await new Promise((r) => setTimeout(r, 300));
 
       // Find properties matching the postal code or same district.
@@ -465,6 +567,15 @@ export const propertiesRouter = router({
       })
     )
     .query(async ({ input }) => {
+      /* SUPABASE:
+      const { data: result, error } = await supabase.rpc('calculate_median_psf', {
+        p_district: district,
+        p_property_type: propType
+      });
+
+      handleSupabaseError(error);
+      // Note: Create Supabase function for percentile_cont aggregate
+      */
       await new Promise((r) => setTimeout(r, 300));
 
       // Identify district from mock properties.

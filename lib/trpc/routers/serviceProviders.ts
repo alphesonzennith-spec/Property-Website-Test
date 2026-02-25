@@ -24,6 +24,19 @@ export const serviceProvidersRouter = router({
       //   .eq('type', input.type)
       //   .range(start, end)
       //   .order('rating', { ascending: false })
+      /* SUPABASE:
+      const { from, to } = paginationParams(input.page, input.limit);
+      let query = supabase
+        .from('service_providers')
+        .select(SERVICE_PROVIDER_LIST_FIELDS, { count: 'exact' })
+        .order('rating', { ascending: false })
+        .range(from, to);
+
+      if (input.type) query = query.eq('type', input.type);
+
+      const { data: result, error, count } = await query;
+      handleSupabaseError(error);
+      */
       return withMockControl('failPropertiesList', () => {
         const filtered = input.type
           ? mockServiceProviders.filter((sp) => sp.type === input.type)
@@ -47,6 +60,16 @@ export const serviceProvidersRouter = router({
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
       // MOCK: Replace with Supabase query — SELECT * FROM service_providers WHERE id = $1
+      /* SUPABASE:
+      const { data: result, error } = await supabase
+        .from('service_providers')
+        .select(SERVICE_PROVIDER_DETAIL_FIELDS)
+        .eq('id', input.id)
+        .single();
+
+      if (error) throw new TRPCError({ code: 'NOT_FOUND', message: `Service provider ${input.id} not found.` });
+      handleSupabaseError(error);
+      */
       await new Promise((r) => setTimeout(r, 250));
 
       const provider = mockServiceProviders.find((sp) => sp.id === input.id);

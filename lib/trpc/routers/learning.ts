@@ -29,6 +29,19 @@ export const learningRouter = router({
       //   .eq('category', input.category)
       //   .range(start, end)
       //   .order('order_index', { ascending: true })
+      /* SUPABASE:
+      const { from, to } = paginationParams(input.page, input.limit);
+      let query = supabase
+        .from('learning_modules')
+        .select(LEARNING_MODULE_LIST_FIELDS, { count: 'exact' })
+        .order('order_index', { ascending: true })
+        .range(from, to);
+
+      if (input.category) query = query.eq('category', input.category);
+
+      const { data: result, error, count } = await query;
+      handleSupabaseError(error);
+      */
       return withMockControl('failPropertiesList', () => {
         const filtered = input.category
           ? mockLearningModules.filter((m) => m.category === input.category)
@@ -52,6 +65,16 @@ export const learningRouter = router({
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
       // MOCK: Replace with Supabase query — SELECT * FROM learning_modules WHERE id = $1
+      /* SUPABASE:
+      const { data: result, error } = await supabase
+        .from('learning_modules')
+        .select(LEARNING_MODULE_DETAIL_FIELDS)
+        .eq('id', input.id)
+        .single();
+
+      if (error) throw new TRPCError({ code: 'NOT_FOUND', message: `Learning module ${input.id} not found.` });
+      handleSupabaseError(error);
+      */
       await new Promise((r) => setTimeout(r, 250));
 
       const module_ = mockLearningModules.find((m) => m.id === input.id);
@@ -70,6 +93,19 @@ export const learningRouter = router({
     .input(z.object({ moduleId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       // MOCK: Replace with Supabase query — INSERT INTO user_module_completions ON CONFLICT DO NOTHING
+      /* SUPABASE:
+      const { data: result, error } = await supabase
+        .from('user_module_completions')
+        .upsert(
+          { user_id: ctx.userId, module_id: input.moduleId, completed_at: new Date().toISOString() },
+          { onConflict: 'user_id,module_id', ignoreDuplicates: false }
+        )
+        .select('id, completed_at, created_at')
+        .single();
+
+      handleSupabaseError(error);
+      const alreadyCompleted = result.created_at !== result.completed_at;
+      */
       if (!mockLearningModules.some((m) => m.id === input.moduleId)) {
         throw new TRPCError({ code: 'NOT_FOUND', message: `Learning module ${input.moduleId} not found.` });
       }

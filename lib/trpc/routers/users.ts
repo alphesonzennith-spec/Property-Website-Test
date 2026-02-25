@@ -15,6 +15,16 @@ export const usersRouter = router({
     .query(async ({ input }) => {
       // MOCK: Replace with Supabase query — SELECT * FROM user_profiles WHERE id = $1
       // SINGPASS: Add Singpass verification check here — verify caller is fetching their own profile or is Admin
+      /* SUPABASE:
+      const { data: result, error } = await supabase
+        .from('user_profiles')
+        .select(USER_PROFILE_FIELDS)
+        .eq('id', input.userId)
+        .single();
+
+      if (error) throw new TRPCError({ code: 'NOT_FOUND', message: `User ${input.userId} not found.` });
+      handleSupabaseError(error);
+      */
       await new Promise((r) => setTimeout(r, 250));
 
       const user = mockUsers.find((u) => u.id === input.userId);
@@ -30,6 +40,16 @@ export const usersRouter = router({
     .query(async ({ input }) => {
       // MOCK: Replace with Supabase query — SELECT * FROM family_groups WHERE id = $1 with members JOIN
       // SINGPASS: Add Singpass verification check here — verify caller is a member of this family group
+      /* SUPABASE:
+      const { data: result, error } = await supabase
+        .from('family_groups')
+        .select('id, name, eligibility_summary, members:family_group_members(user_id, role, users!inner(id, name, singpass_verified))')
+        .eq('id', input.familyGroupId)
+        .single();
+
+      if (error) throw new TRPCError({ code: 'NOT_FOUND', message: `Family group ${input.familyGroupId} not found.` });
+      handleSupabaseError(error);
+      */
       await new Promise((r) => setTimeout(r, 250));
 
       const family = mockFamilies.find((f) => f.id === input.familyGroupId);
@@ -55,6 +75,16 @@ export const usersRouter = router({
     .query(async ({ input }) => {
       // MOCK: Replace with Supabase query — JOIN user_profiles + family_groups + eligibility_summaries
       // SINGPASS: Add Singpass verification check here — assert singpassVerified before exposing eligibility
+      /* SUPABASE:
+      const { data: result, error } = await supabase
+        .from('user_profiles')
+        .select('id, residency_status, singpass_verified, family_group_id, family_groups(name, eligibility_summary)')
+        .eq('id', input.userId)
+        .single();
+
+      if (error) throw new TRPCError({ code: 'NOT_FOUND', message: `User ${input.userId} not found.` });
+      handleSupabaseError(error);
+      */
       await new Promise((r) => setTimeout(r, 250));
 
       const user = mockUsers.find((u) => u.id === input.userId);
@@ -89,6 +119,25 @@ export const usersRouter = router({
       //   .eq('owner_id', input.userId)
       //   .range(start, end)
       // SINGPASS: Add Singpass verification check here — verify caller is the portfolio owner or Admin
+      /* SUPABASE:
+      const { from, to } = paginationParams(input.page, input.limit);
+      const { data: ownedData, error: ownedError, count: ownedCount } = await supabase
+        .from('properties')
+        .select(PROPERTY_CARD_FIELDS, { count: 'exact' })
+        .eq('owner_id', input.userId)
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      handleSupabaseError(ownedError);
+
+      const { data: transactions, error: txError } = await supabase
+        .from('user_transactions')
+        .select(`${TRANSACTION_DETAIL_FIELDS}, properties!inner(${PROPERTY_CARD_FIELDS})`)
+        .eq('user_id', input.userId)
+        .order('transaction_date', { ascending: false });
+
+      handleSupabaseError(txError);
+      */
       await new Promise((r) => setTimeout(r, 250));
 
       const user = mockUsers.find((u) => u.id === input.userId);

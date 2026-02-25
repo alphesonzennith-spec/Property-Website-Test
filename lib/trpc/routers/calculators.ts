@@ -17,6 +17,17 @@ export const calculatorsRouter = router({
    * LIMIT 1
    */
   getRegulatoryRates: publicProcedure.query(async () => {
+    /* SUPABASE:
+    const { data: result, error } = await supabase
+      .from('regulatory_config')
+      .select('*')
+      .order('effective_date', { ascending: false })
+      .limit(1)
+      .single();
+
+    handleSupabaseError(error);
+    const validated = RegulatoryConfigSchema.parse(result);
+    */
     return withMockControl('failRegulatoryRates', async () => {
       try {
         // Validate config at runtime with Zod
@@ -45,6 +56,28 @@ export const calculatorsRouter = router({
       })
     )
     .query(async ({ input }) => {
+      /* SUPABASE:
+      const columnMap: Record<string, string> = {
+        stampDuty: 'stamp_duty',
+        borrowing: 'borrowing',
+        mortgage: 'mortgage',
+        cpf: 'cpf',
+        propertyTax: 'property_tax',
+        misc: 'misc',
+        cpfRates: 'cpf_rates',
+        maintenanceFees: 'maintenance_fees',
+      };
+
+      const column = columnMap[input.section];
+      const { data: result, error } = await supabase
+        .from('regulatory_config')
+        .select(column)
+        .order('effective_date', { ascending: false })
+        .limit(1)
+        .single();
+
+      handleSupabaseError(error);
+      */
       try {
         // Simulate database latency
         await new Promise((r) => setTimeout(r, 250));
@@ -71,8 +104,19 @@ export const calculatorsRouter = router({
 
   /**
    * Get BSD tiers only (most frequently accessed)
+   * MOCK: Replace with targeted Supabase query
    */
   getBSDTiers: publicProcedure.query(async () => {
+    /* SUPABASE:
+    const { data: result, error } = await supabase
+      .from('regulatory_config')
+      .select('stamp_duty->bsd->tiers')
+      .order('effective_date', { ascending: false })
+      .limit(1)
+      .single();
+
+    handleSupabaseError(error);
+    */
     try {
       await new Promise((r) => setTimeout(r, 250));
 
@@ -98,8 +142,19 @@ export const calculatorsRouter = router({
 
   /**
    * Get ABSD rates only
+   * MOCK: Replace with targeted Supabase query
    */
   getABSDRates: publicProcedure.query(async () => {
+    /* SUPABASE:
+    const { data: result, error } = await supabase
+      .from('regulatory_config')
+      .select('stamp_duty->absd->rates')
+      .order('effective_date', { ascending: false })
+      .limit(1)
+      .single();
+
+    handleSupabaseError(error);
+    */
     try {
       await new Promise((r) => setTimeout(r, 250));
 
