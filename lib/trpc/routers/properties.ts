@@ -5,6 +5,7 @@ import { router, publicProcedure } from '../trpc';
 import { mockProperties, mockUsers, mockAgents, mockTransactions } from '@/lib/mock';
 import { paginationSchema, createPaginatedResponse, getPaginationRange } from './paginationSchema';
 import { withMockControl, applyEdgeCases } from '@/lib/mock/mockControls';
+import { normalizeDates } from '@/lib/utils/dateTransformers';
 import {
   PropertyType,
   ListingType,
@@ -164,12 +165,12 @@ export const propertiesRouter = router({
         const processedItems = applyEdgeCases(items, 'list');
 
         return {
-          data: processedItems,
+          data: processedItems.map(normalizeDates),
           total,
           page: input.page,
           limit: input.limit,
           totalPages,
-        } satisfies PropertySearchResponse;
+        } as unknown as PropertySearchResponse;
       });
     }),
 
@@ -200,7 +201,7 @@ export const propertiesRouter = router({
             : null,
         };
 
-        return applyEdgeCases(propertyData, 'detail');
+        return normalizeDates(applyEdgeCases(propertyData, 'detail'));
       });
     }),
 
@@ -212,7 +213,7 @@ export const propertiesRouter = router({
         const data = mockProperties
           .filter((p) => p.featured && p.status === PropertyStatus.Active)
           .slice(0, 8);
-        return { data: applyEdgeCases(data, 'list') };
+        return { data: applyEdgeCases(data, 'list').map(normalizeDates) };
       });
     }),
 
@@ -238,7 +239,7 @@ export const propertiesRouter = router({
               p.price <= input.maxPrice
           )
           .slice(0, 4);
-        return { data: applyEdgeCases(data, 'list') };
+        return { data: applyEdgeCases(data, 'list').map(normalizeDates) };
       });
     }),
 
@@ -262,7 +263,7 @@ export const propertiesRouter = router({
         const processedItems = applyEdgeCases(paginatedProperties, 'list');
 
         return createPaginatedResponse(
-          processedItems,
+          processedItems.map(normalizeDates),
           ownerProperties.length,
           input.page,
           input.limit

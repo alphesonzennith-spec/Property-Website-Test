@@ -5,6 +5,7 @@ import { router, publicProcedure } from '../trpc';
 import { mockUsers, mockFamilies, mockProperties } from '@/lib/mock';
 import { paginationSchema, createPaginatedResponse, getPaginationRange } from './paginationSchema';
 import { withMockControl, applyEdgeCases } from '@/lib/mock/mockControls';
+import { normalizeDates } from '@/lib/utils/dateTransformers';
 
 export const usersRouter = router({
 
@@ -20,7 +21,7 @@ export const usersRouter = router({
       if (!user) {
         throw new TRPCError({ code: 'NOT_FOUND', message: `User ${input.userId} not found.` });
       }
-      return user;
+      return normalizeDates(user);
     }),
 
   /** Fetch a family group and all its members' basic details. */
@@ -45,7 +46,7 @@ export const usersRouter = router({
         };
       });
 
-      return { ...family, members: enrichedMembers };
+      return normalizeDates({ ...family, members: enrichedMembers });
     }),
 
   /** Return the eligibility dashboard for a user. */
