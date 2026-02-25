@@ -162,6 +162,38 @@ if (input.ownerSingpassVerified !== undefined) {
 
 ---
 
+### Mistake: Auth.js v5 provider with function values for authorization.url or token (ClientFetchError)
+
+**Issue:** Passing async functions as `authorization.url` or `token.url` in a custom `OAuthConfig` crashes `NextAuth(authOptions)` at module-load time. Auth.js v5 processes these fields as URL strings during provider initialization — calling `.startsWith()` or similar on a function throws `TypeError`, the `/api/auth/[...nextauth]` module fails to load, and Next.js serves an HTML 500 page for every `/api/auth/*` request. The browser then sees `"<!DOCTYPE "` instead of JSON → `ClientFetchError: Unexpected token '<'` in every `SessionProvider.useEffect` / `getSession()` call.
+
+**Solution:** `authorization.url` and `token` must always be **string URLs**. Move custom logic to the correct hooks:
+- `authorization.url` → string (Auth.js generates PKCE internally via `checks: ['pkce']`)
+- `token` → string URL (use `conform` for response transformation if needed)
+- Custom userinfo fetching → `userinfo.request` callback (NOT `userinfo.url` as a function)
+
+```typescript
+// ✅ CORRECT
+authorization: {
+  url: process.env.SINGPASS_AUTH_URL || 'https://stg-id.singpass.gov.sg/authorize',
+  params: { scope: 'openid myinfo-person' },
+},
+token: process.env.SINGPASS_TOKEN_URL || 'https://stg-id.singpass.gov.sg/token',
+userinfo: {
+  async request({ tokens }) { /* custom fetch logic */ },
+},
+
+// ❌ WRONG — crashes NextAuth at module load
+authorization: { url: async () => ({ url: '...', state, codeVerifier }) },
+token: { url: async (params) => exchangeCode(params) },
+userinfo: { url: async (tokens) => fetchUserInfo(tokens) },
+```
+
+**Where it matters:**
+- `lib/auth/singpass-provider.ts` (`createSingpassProvider`)
+- Any future custom OAuth provider added to `authOptions.providers`
+
+---
+
 ### Mistake: Slider value type mismatch
 
 **Issue:** Shadcn Slider expects `number[]` array, easy to pass single number
@@ -791,9 +823,11 @@ Use `handleSupabaseError`, `paginationParams`, `buildSearchQuery`, and `snakeToC
 
 ### OAuth Flow
 - PKCE is mandatory (code_challenge/code_verifier)
+- **Auth.js generates PKCE automatically** when `checks: ['pkce']` is set — do NOT generate manually
 - State parameter for CSRF protection (NextAuth handles)
 - Scope: `openid myinfo-person`
 - Token exchange requires code_verifier
+- **`authorization.url` and `token` must be string URLs** — functions crash the route at module load (see Common Mistakes)
 
 ### Session Management
 - JWT strategy (no DB lookup per request)
