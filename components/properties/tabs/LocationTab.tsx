@@ -82,7 +82,7 @@ export function LocationTab({ property }: LocationTabProps) {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {property.nearbyMRT.slice(0, 5).map((mrt, index) => (
+              {(property.nearbyMRT ?? []).slice(0, 5).map((mrt, index) => (
                 <div
                   key={index}
                   className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"

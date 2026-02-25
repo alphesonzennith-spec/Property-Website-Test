@@ -51,10 +51,10 @@ export function VerificationCard({ property }: VerificationCardProps) {
         {hasLegalDocs && (
           <div>
             <p className="text-xs text-gray-500 font-medium mb-2">
-              Legal Documents ({property.legalDocUrls.length})
+              Legal Documents ({(property.legalDocUrls ?? []).length})
             </p>
             <div className="space-y-2">
-              {property.legalDocUrls.slice(0, 3).map((url, index) => (
+              {(property.legalDocUrls ?? []).slice(0, 3).map((url, index) => (
                 <Button
                   key={index}
                   variant="outline"
