@@ -699,3 +699,41 @@ onChange={(e) => setFilter('fieldName', e.target.value === '' ? undefined : Numb
 - Responsive designs needing side-by-side on desktop, stacked on mobile
 
 ---
+
+---
+
+## Singpass/MyInfo Integration Patterns
+
+### NRIC Security (CRITICAL)
+- **NEVER** log or store raw NRIC values
+- **ALWAYS** hash NRIC with SHA-256 immediately upon receipt
+- Use `hashNRIC()` from `lib/singpass/crypto.ts`
+- Mark all NRIC handling with `// CRITICAL:` comments
+
+### Mock/Production Switching
+- Use `USE_MOCK_SINGPASS=true` for local development
+- Mock client returns instant fake data (no external calls)
+- Production client uses real Singpass OAuth endpoints
+- Switch happens in provider factory (`createSingpassProvider()`)
+
+### OAuth Flow
+- PKCE is mandatory (code_challenge/code_verifier)
+- State parameter for CSRF protection (NextAuth handles)
+- Scope: `openid myinfo-person`
+- Token exchange requires code_verifier
+
+### Session Management
+- JWT strategy (no DB lookup per request)
+- Verification data in `session.user.singpassVerification`
+- Badges in `session.user.verificationBadges`
+- 30-day expiration
+
+### Route Protection
+- Middleware checks `token.singpassVerification.verified`
+- Protected routes: `/dashboard/list-property`, `/dashboard/offers`, `/properties/*/contact`
+- Redirect to `/verify?callbackUrl=<original>` if not verified
+
+### Comment Markers
+- `// SINGPASS_SWAP:` - Mock/production switching points
+- `// SUPABASE:` - Database operations (future)
+- `// CRITICAL:` - Security-critical code (NRIC, tokens)
