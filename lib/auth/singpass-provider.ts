@@ -67,8 +67,17 @@ export function createSingpassProvider(useMock: boolean): OAuthConfig<MyInfoPers
         // Production: fetch from MyInfo API
         // SINGPASS_SWAP: Import and use fetchMyInfoData
         const { fetchMyInfoData } = await import('../singpass/myinfo')
-        const idClaims = await client.verifyIdToken(tokens.id_token!)
-        return fetchMyInfoData(tokens.access_token!, idClaims.sub)
+
+        // Validate tokens exist
+        if (!tokens.id_token) {
+          throw new Error('Missing ID token from Singpass')
+        }
+        if (!tokens.access_token) {
+          throw new Error('Missing access token from Singpass')
+        }
+
+        const idClaims = await client.verifyIdToken(tokens.id_token)
+        return fetchMyInfoData(tokens.access_token, idClaims.sub)
       },
     },
 
