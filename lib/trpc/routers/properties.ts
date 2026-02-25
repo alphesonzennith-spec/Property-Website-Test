@@ -228,7 +228,7 @@ export const propertiesRouter = router({
     )
     .query(async ({ input }) => {
       // MOCK: Replace with Supabase query — SELECT * FROM properties WHERE district = $1 AND property_type = $2 AND price <= $3 AND id != $4 LIMIT 4
-      return withMockControl('failPropertyDetail', () => {
+      return withMockControl('failPropertiesList', () => {
         const data = mockProperties
           .filter(
             (p) =>
@@ -238,7 +238,7 @@ export const propertiesRouter = router({
               p.price <= input.maxPrice
           )
           .slice(0, 4);
-        return { data };
+        return { data: applyEdgeCases(data, 'list') };
       });
     }),
 
