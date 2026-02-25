@@ -16,7 +16,7 @@ export type PaginationInput = z.infer<typeof paginationSchema>;
  * Standard paginated response type
  */
 export type PaginatedResponse<T> = {
-  items: T[];
+  data: T[];
   total: number;
   page: number;
   limit: number;
@@ -25,20 +25,20 @@ export type PaginatedResponse<T> = {
 
 /**
  * Helper function to create paginated responses
- * @param items - Array of items for current page
+ * @param data - Array of items for current page
  * @param total - Total count of all items (unpaginated)
  * @param page - Current page number
  * @param limit - Items per page
  * @returns Standardized paginated response object
  */
 export function createPaginatedResponse<T>(
-  items: T[],
+  data: T[],
   total: number,
   page: number,
   limit: number
 ): PaginatedResponse<T> {
   return {
-    items,
+    data,
     total,
     page,
     limit,

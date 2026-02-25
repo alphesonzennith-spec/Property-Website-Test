@@ -107,9 +107,9 @@ export function ResultsArea({ listingType, compact }: ResultsAreaProps) {
             <Skeleton key={i} className="h-96 w-full rounded-xl" />
           ))}
         </div>
-      ) : data && data.items.length > 0 ? (
+      ) : data && data.data.length > 0 ? (
         <div className={`grid gap-6 ${compact ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-2' : 'grid-cols-1 md:grid-cols-2'}`}>
-          {data.items.map((property) => (
+          {data.data.map((property) => (
             <div key={property.id} className="relative flex flex-col">
               {/* Compare Checkbox */}
               <div className="absolute top-4 right-4 z-10">

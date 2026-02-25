@@ -20,7 +20,7 @@ export function ComparisonFloatingBar() {
   );
 
   const comparedProperties = comparisonList
-    .map((id) => propertiesQuery.data?.items.find((p) => p.id === id))
+    .map((id) => propertiesQuery.data?.data.find((p) => p.id === id))
     .filter(Boolean);
 
   const handleCompare = () => {

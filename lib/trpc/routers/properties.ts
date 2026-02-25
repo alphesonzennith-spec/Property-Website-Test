@@ -66,7 +66,7 @@ const PropertyFiltersSchema = z.object({
 export type PropertyFilters = z.infer<typeof PropertyFiltersSchema>;
 
 export interface PropertySearchResponse {
-  items: Property[];
+  data: Property[];
   total: number;
   page: number;
   limit: number;
@@ -164,8 +164,8 @@ export const propertiesRouter = router({
         const processedItems = applyEdgeCases(items, 'list');
 
         return {
-          items: processedItems,
-          total: processedItems.length,
+          data: processedItems,
+          total,
           page: input.page,
           limit: input.limit,
           totalPages,

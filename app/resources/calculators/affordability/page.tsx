@@ -613,9 +613,9 @@ export default function AffordabilityCalculatorPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-52 rounded-2xl" />)}
                 </div>
-              ) : matchedProperties.data?.items && matchedProperties.data.items.length > 0 ? (
+              ) : matchedProperties.data?.data && matchedProperties.data.data.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {matchedProperties.data.items.slice(0, 4).map((prop) => (
+                  {matchedProperties.data.data.slice(0, 4).map((prop) => (
                     <a
                       key={prop.id}
                       href={`/properties/${prop.id}`}
