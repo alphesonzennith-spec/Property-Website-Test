@@ -66,6 +66,6 @@ export const agentsRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: `Agent ${input.agentId} not found.` });
       }
 
-      return agent.portfolioMapData;
+      return { data: agent.portfolioMapData };
     }),
 });

@@ -208,11 +208,12 @@ export const propertiesRouter = router({
   getFeatured: publicProcedure
     .query(async () => {
       // MOCK: Replace with Supabase query — SELECT * FROM properties WHERE featured = true AND status = 'Active' LIMIT 8
-      await new Promise((r) => setTimeout(r, 250));
-
-      return mockProperties
-        .filter((p) => p.featured && p.status === PropertyStatus.Active)
-        .slice(0, 8);
+      return withMockControl('failPropertiesList', () => {
+        const data = mockProperties
+          .filter((p) => p.featured && p.status === PropertyStatus.Active)
+          .slice(0, 8);
+        return { data: applyEdgeCases(data, 'list') };
+      });
     }),
 
   /** Return up to 4 similar properties by district, type, and price proximity. */
@@ -227,17 +228,18 @@ export const propertiesRouter = router({
     )
     .query(async ({ input }) => {
       // MOCK: Replace with Supabase query — SELECT * FROM properties WHERE district = $1 AND property_type = $2 AND price <= $3 AND id != $4 LIMIT 4
-      await new Promise((r) => setTimeout(r, 250));
-
-      return mockProperties
-        .filter(
-          (p) =>
-            p.id !== input.id &&
-            p.district === input.district &&
-            p.propertyType === input.propertyType &&
-            p.price <= input.maxPrice
-        )
-        .slice(0, 4);
+      return withMockControl('failPropertyDetail', () => {
+        const data = mockProperties
+          .filter(
+            (p) =>
+              p.id !== input.id &&
+              p.district === input.district &&
+              p.propertyType === input.propertyType &&
+              p.price <= input.maxPrice
+          )
+          .slice(0, 4);
+        return { data };
+      });
     }),
 
   /** Return all properties listed by a specific owner. */
@@ -306,7 +308,10 @@ export const propertiesRouter = router({
       }
       const current = viewCounts.get(input.id) ?? 0;
       viewCounts.set(input.id, current + 1);
-      return { viewsCount: current + 1 };
+      return {
+        success: true,
+        data: { viewsCount: current + 1 },
+      };
     }),
 
   /** Parse natural language query into structured filters (MOCK implementation). */
@@ -366,8 +371,8 @@ export const propertiesRouter = router({
       }
 
       return {
-        filters,
-        extractedTags,
+        success: true,
+        data: { filters, extractedTags },
       };
     }),
 

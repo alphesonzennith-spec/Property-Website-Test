@@ -79,10 +79,13 @@ export const learningRouter = router({
       completions.add(key);
 
       return {
-        moduleId: input.moduleId,
-        userId: ctx.userId,
-        alreadyCompleted,
-        completedAt: new Date().toISOString(),
+        success: true,
+        data: {
+          moduleId: input.moduleId,
+          userId: ctx.userId,
+          alreadyCompleted,
+          completedAt: new Date().toISOString(),
+        },
       };
     }),
 });

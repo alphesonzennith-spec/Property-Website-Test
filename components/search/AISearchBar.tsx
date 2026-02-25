@@ -14,8 +14,8 @@ export function AISearchBar() {
 
   const parseQuery = trpc.properties.parseNaturalLanguageQuery.useMutation({
     onSuccess: (data) => {
-      setFilters(data.filters);
-      setAiTags(data.extractedTags);
+      setFilters(data.data.filters);
+      setAiTags(data.data.extractedTags);
     },
   });
 
