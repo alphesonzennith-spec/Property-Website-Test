@@ -26,44 +26,53 @@ export const authOptions: NextAuthConfig = {
     async jwt({ token, account, profile }) {
       // On initial sign-in with Singpass
       if (account?.provider === 'singpass' && profile) {
-        const myInfo = profile as unknown as MyInfoPersonResponse
+        try {
+          const myInfo = profile as unknown as MyInfoPersonResponse
 
-        // Process MyInfo data (hashes NRIC)
-        const processedData = await processMyInfoData(myInfo)
+          // Process MyInfo data (hashes NRIC)
+          const processedData = await processMyInfoData(myInfo)
 
-        // Create verification object
-        const verification: SingpassVerification = {
-          verified: true,
-          verifiedAt: new Date(),
-          nricHash: processedData.nricHash,
-          name: processedData.name,
-          nationality: processedData.nationality,
-          dateOfBirth: processedData.dateOfBirth,
-          homeAddress: processedData.homeAddress,
+          // Create verification object
+          const verification: SingpassVerification = {
+            verified: true,
+            verifiedAt: new Date().toISOString() as unknown as Date,
+            nricHash: processedData.nricHash,
+            name: processedData.name,
+            nationality: processedData.nationality,
+            dateOfBirth: processedData.dateOfBirth,
+            homeAddress: processedData.homeAddress,
+          }
+
+          token.singpassVerification = verification
+
+          // Add verification badge
+          const badge: VerificationBadge = {
+            type: 'singpass',
+            label: 'Singpass Verified',
+            issuedAt: new Date().toISOString() as unknown as Date,
+            expiresAt: undefined,
+          }
+
+          token.verificationBadges = [badge]
+
+          // SUPABASE: Save verification to database
+          // await saveVerificationToDatabase(token.sub, verification, badge)
+
+          console.log('Singpass verification successful for user', token.sub)
+        } catch (error) {
+          console.error('Singpass verification failed:', error)
+          // Continue without verification - user can retry
         }
-
-        token.singpassVerification = verification
-
-        // Add verification badge
-        const badge: VerificationBadge = {
-          type: 'singpass',
-          label: 'Singpass Verified',
-          issuedAt: new Date(),
-          expiresAt: undefined,
-        }
-
-        token.verificationBadges = [badge]
-
-        // SUPABASE: Save verification to database
-        // await saveVerificationToDatabase(token.sub, verification, badge)
-
-        console.log('Singpass verification successful for user', token.sub)
       }
 
       return token
     },
 
     async session({ session, token }) {
+      // Add user ID
+      session.user.id = token.sub as string
+      session.user.email = token.email as string || ''
+
       // Add Singpass verification data to session
       if (token.singpassVerification) {
         session.user.singpassVerification = token.singpassVerification
