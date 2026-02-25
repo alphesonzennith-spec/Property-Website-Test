@@ -2,12 +2,19 @@
 import type { OAuthConfig } from 'next-auth/providers'
 import { SingpassClient } from '../singpass/client'
 import { MockSingpassClient } from '../singpass/mock-client'
-import { generateCodeVerifier, generateCodeChallenge } from '../singpass/crypto'
 import { MyInfoPersonResponse } from '../singpass/types'
 
 export function createSingpassProvider(useMock: boolean): OAuthConfig<MyInfoPersonResponse> {
   // SINGPASS_SWAP: Switch between mock and production client
   const getClient = () => useMock ? new MockSingpassClient() : new SingpassClient()
+
+  // Auth.js v5 requires authorization.url and token to be strings, not functions.
+  // Functions as URL values crash NextAuth(authOptions) at module-load time, causing
+  // every /api/auth/* request to return HTML 500 instead of JSON (ClientFetchError).
+  // PKCE (code_challenge / code_verifier) is generated internally by Auth.js when
+  // checks: ['pkce'] is set — no manual PKCE generation needed here.
+  const authUrl = process.env.SINGPASS_AUTH_URL || 'https://stg-id.singpass.gov.sg/authorize'
+  const tokenUrl = process.env.SINGPASS_TOKEN_URL || 'https://stg-id.singpass.gov.sg/token'
 
   return {
     id: 'singpass',
@@ -17,37 +24,18 @@ export function createSingpassProvider(useMock: boolean): OAuthConfig<MyInfoPers
     checks: ['state', 'pkce'],
 
     authorization: {
-      url: async () => {
-        // Generate PKCE pair
-        const codeVerifier = generateCodeVerifier()
-        const codeChallenge = await generateCodeChallenge(codeVerifier)
-        const state = generateCodeVerifier() // Reuse for state
-
-        // Store verifier for token exchange (NextAuth handles this internally)
-        return {
-          url: getClient().getAuthorizationUrl(codeChallenge, state),
-          state,
-          codeVerifier,
-        }
-      },
-      params: {
-        scope: 'openid myinfo-person',
-      },
+      url: authUrl,
+      params: { scope: 'openid myinfo-person' },
     },
 
-    token: {
-      url: async (params: any) => {
-        const tokens = await getClient().exchangeCodeForToken(
-          params.code,
-          params.codeVerifier
-        )
-        return tokens
-      },
-    },
+    // Auth.js v5: token must be a string URL. Custom exchange logic → use conform().
+    // SINGPASS_SWAP: token endpoint will receive code + code_verifier from Auth.js PKCE flow.
+    token: tokenUrl,
 
     userinfo: {
-      url: async (tokens: any) => {
-        // In mock mode, return fake MyInfo data
+      // Auth.js v5: use 'request' (not 'url') for custom userinfo fetching logic.
+      async request({ tokens }: any) {
+        // In mock mode, return fake MyInfo data without hitting the real API
         if (useMock) {
           return {
             uinfin: { value: 'S1234567D' },
@@ -68,13 +56,8 @@ export function createSingpassProvider(useMock: boolean): OAuthConfig<MyInfoPers
         // SINGPASS_SWAP: Import and use fetchMyInfoData
         const { fetchMyInfoData } = await import('../singpass/myinfo')
 
-        // Validate tokens exist
-        if (!tokens.id_token) {
-          throw new Error('Missing ID token from Singpass')
-        }
-        if (!tokens.access_token) {
-          throw new Error('Missing access token from Singpass')
-        }
+        if (!tokens.id_token) throw new Error('Missing ID token from Singpass')
+        if (!tokens.access_token) throw new Error('Missing access token from Singpass')
 
         const idClaims = await getClient().verifyIdToken(tokens.id_token)
         return fetchMyInfoData(tokens.access_token, idClaims.sub)
