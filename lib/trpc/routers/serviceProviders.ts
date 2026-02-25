@@ -5,6 +5,7 @@ import { router, publicProcedure } from '../trpc';
 import { mockServiceProviders } from '@/lib/mock';
 import { ServiceProviderType } from '@/types';
 import { paginationSchema, createPaginatedResponse, getPaginationRange } from './paginationSchema';
+import { withMockControl, applyEdgeCases } from '@/lib/mock/mockControls';
 
 export const serviceProvidersRouter = router({
 
@@ -23,21 +24,22 @@ export const serviceProvidersRouter = router({
       //   .eq('type', input.type)
       //   .range(start, end)
       //   .order('rating', { ascending: false })
-      await new Promise((r) => setTimeout(r, 250));
+      return withMockControl('failPropertiesList', () => {
+        const filtered = input.type
+          ? mockServiceProviders.filter((sp) => sp.type === input.type)
+          : mockServiceProviders;
 
-      const filtered = input.type
-        ? mockServiceProviders.filter((sp) => sp.type === input.type)
-        : mockServiceProviders;
+        const { start, end } = getPaginationRange(input.page, input.limit);
+        const paginated = filtered.slice(start, end + 1);
+        const processedItems = applyEdgeCases(paginated, 'list');
 
-      const { start, end } = getPaginationRange(input.page, input.limit);
-      const paginated = filtered.slice(start, end + 1);
-
-      return createPaginatedResponse(
-        paginated,
-        filtered.length,
-        input.page,
-        input.limit
-      );
+        return createPaginatedResponse(
+          processedItems,
+          filtered.length,
+          input.page,
+          input.limit
+        );
+      });
     }),
 
   /** Fetch a single service provider's full profile. */

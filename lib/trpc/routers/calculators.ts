@@ -5,6 +5,7 @@ import {
   mockRegulatoryConfig,
   RegulatoryConfigSchema,
 } from '@/lib/mock/regulatoryConfig';
+import { withMockControl } from '@/lib/mock/mockControls';
 
 export const calculatorsRouter = router({
   /**
@@ -16,21 +17,20 @@ export const calculatorsRouter = router({
    * LIMIT 1
    */
   getRegulatoryRates: publicProcedure.query(async () => {
-    try {
-      // Simulate database latency
-      await new Promise((r) => setTimeout(r, 250));
+    return withMockControl('failRegulatoryRates', async () => {
+      try {
+        // Validate config at runtime with Zod
+        const validated = RegulatoryConfigSchema.parse(mockRegulatoryConfig);
 
-      // Validate config at runtime with Zod
-      const validated = RegulatoryConfigSchema.parse(mockRegulatoryConfig);
-
-      return validated;
-    } catch (error) {
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Failed to load regulatory configuration',
-        cause: error,
-      });
-    }
+        return validated;
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to load regulatory configuration',
+          cause: error,
+        });
+      }
+    });
   }),
 
   /**

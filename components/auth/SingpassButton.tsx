@@ -9,7 +9,7 @@ import { toast } from 'sonner'
 
 interface SingpassButtonProps {
   variant?: 'default' | 'outline' | 'ghost'
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'default' | 'sm' | 'lg'
   onSuccess?: () => void
   onError?: (error: Error) => void
   callbackUrl?: string

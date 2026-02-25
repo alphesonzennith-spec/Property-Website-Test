@@ -1,7 +1,6 @@
 // app/(auth)/verify/page.tsx
-import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
-import { authOptions } from '@/lib/auth/nextauth.config'
+import { auth } from '@/lib/auth/nextauth.config'
 import { SingpassButton } from '@/components/auth/SingpassButton'
 import {
   Accordion,
@@ -45,7 +44,7 @@ export default async function VerifyPage({
 }: {
   searchParams: { callbackUrl?: string }
 }) {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
 
   // Already verified? Redirect to dashboard
   if (session?.user.singpassVerification?.verified) {

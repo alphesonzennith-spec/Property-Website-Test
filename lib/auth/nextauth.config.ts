@@ -88,3 +88,6 @@ export const authOptions: NextAuthConfig = {
 
   debug: process.env.NODE_ENV === 'development',
 }
+
+import NextAuth from 'next-auth'
+export const { handlers, auth, signIn, signOut } = NextAuth(authOptions)

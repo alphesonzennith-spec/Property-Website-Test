@@ -139,7 +139,7 @@ export default function PropertyValuePage() {
 
     // ── 12-month chart data ────────────────────────────────────────────────────
     const chartData = useMemo(() => {
-        if (!comparables?.transactions.length) return [];
+        if (!comparables?.items.length) return [];
 
         const now = new Date();
         const months: Array<{ key: string; label: string; prices: number[]; count: number }> = [];
@@ -151,7 +151,7 @@ export default function PropertyValuePage() {
             months.push({ key, label, prices: [], count: 0 });
         }
 
-        for (const tx of comparables.transactions) {
+        for (const tx of comparables.items) {
             const d = new Date(tx!.date);
             const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
             const slot = months.find((m) => m.key === key);
@@ -220,8 +220,8 @@ export default function PropertyValuePage() {
                                                 key={t}
                                                 onClick={() => setPropertyType(t)}
                                                 className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${propertyType === t
-                                                        ? 'bg-emerald-600 text-white border-emerald-600'
-                                                        : 'bg-white text-gray-700 border-gray-300 hover:border-emerald-400'
+                                                    ? 'bg-emerald-600 text-white border-emerald-600'
+                                                    : 'bg-white text-gray-700 border-gray-300 hover:border-emerald-400'
                                                     }`}
                                             >
                                                 {t}
@@ -347,7 +347,7 @@ export default function PropertyValuePage() {
                             )}
 
                             {/* ── 12-Month Price History Chart ──────────────────────────── */}
-                            {comparables?.transactions.length && !isLoading && (
+                            {comparables?.items.length && !isLoading && (
                                 <div>
                                     <h3 className="text-base font-semibold text-gray-800 mb-4">
                                         12-Month Price History
@@ -395,7 +395,7 @@ export default function PropertyValuePage() {
                             )}
 
                             {/* ── Comparable Transactions Table ─────────────────────────── */}
-                            {comparables?.transactions.length && !isLoading && (
+                            {comparables?.items.length && !isLoading && (
                                 <div>
                                     <h3 className="text-base font-semibold text-gray-800 mb-4">
                                         Comparable Transactions
@@ -412,7 +412,7 @@ export default function PropertyValuePage() {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-50">
-                                                {comparables.transactions.map((tx, i) => {
+                                                {comparables.items.map((tx, i) => {
                                                     const isMyFloor = searchedFloor !== null && tx!.floor !== null && tx!.floor === searchedFloor;
                                                     return (
                                                         <tr

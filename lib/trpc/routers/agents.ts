@@ -4,6 +4,7 @@ import { TRPCError } from '@trpc/server';
 import { router, publicProcedure } from '../trpc';
 import { mockAgents, mockProperties } from '@/lib/mock';
 import { paginationSchema, createPaginatedResponse, getPaginationRange } from './paginationSchema';
+import { withMockControl, applyEdgeCases } from '@/lib/mock/mockControls';
 
 export const agentsRouter = router({
 
@@ -17,17 +18,18 @@ export const agentsRouter = router({
       //   .select(AGENT_LIST_FIELDS, { count: 'exact' })
       //   .range(start, end)
       //   .order('rating', { ascending: false })
-      await new Promise((r) => setTimeout(r, 250));
+      return withMockControl('failPropertiesList', () => {
+        const { start, end } = getPaginationRange(input.page, input.limit);
+        const paginatedAgents = mockAgents.slice(start, end + 1);
+        const processedItems = applyEdgeCases(paginatedAgents, 'list');
 
-      const { start, end } = getPaginationRange(input.page, input.limit);
-      const paginatedAgents = mockAgents.slice(start, end + 1);
-
-      return createPaginatedResponse(
-        paginatedAgents,
-        mockAgents.length,
-        input.page,
-        input.limit
-      );
+        return createPaginatedResponse(
+          processedItems,
+          mockAgents.length,
+          input.page,
+          input.limit
+        );
+      });
     }),
 
   /** Fetch a single agent by ID with their active listings. */

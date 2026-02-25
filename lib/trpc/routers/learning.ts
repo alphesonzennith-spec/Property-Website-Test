@@ -5,6 +5,7 @@ import { router, publicProcedure, protectedProcedure } from '../trpc';
 import { mockLearningModules } from '@/lib/mock';
 import { LearningCategory } from '@/types';
 import { paginationSchema, createPaginatedResponse, getPaginationRange } from './paginationSchema';
+import { withMockControl, applyEdgeCases } from '@/lib/mock/mockControls';
 
 // ── In-memory completion store ────────────────────────────────────────────────
 // MOCK: Replace with Supabase query — INSERT INTO user_module_completions (user_id, module_id, completed_at)
@@ -28,21 +29,22 @@ export const learningRouter = router({
       //   .eq('category', input.category)
       //   .range(start, end)
       //   .order('order_index', { ascending: true })
-      await new Promise((r) => setTimeout(r, 250));
+      return withMockControl('failPropertiesList', () => {
+        const filtered = input.category
+          ? mockLearningModules.filter((m) => m.category === input.category)
+          : mockLearningModules;
 
-      const filtered = input.category
-        ? mockLearningModules.filter((m) => m.category === input.category)
-        : mockLearningModules;
+        const { start, end } = getPaginationRange(input.page, input.limit);
+        const paginated = filtered.slice(start, end + 1);
+        const processedItems = applyEdgeCases(paginated, 'list');
 
-      const { start, end } = getPaginationRange(input.page, input.limit);
-      const paginated = filtered.slice(start, end + 1);
-
-      return createPaginatedResponse(
-        paginated,
-        filtered.length,
-        input.page,
-        input.limit
-      );
+        return createPaginatedResponse(
+          processedItems,
+          filtered.length,
+          input.page,
+          input.limit
+        );
+      });
     }),
 
   /** Fetch a single learning module's full content by ID. */

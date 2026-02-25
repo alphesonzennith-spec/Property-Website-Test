@@ -4,6 +4,7 @@ import { TRPCError } from '@trpc/server';
 import { router, publicProcedure } from '../trpc';
 import { mockProperties, mockUsers, mockAgents, mockTransactions } from '@/lib/mock';
 import { paginationSchema, createPaginatedResponse, getPaginationRange } from './paginationSchema';
+import { withMockControl, applyEdgeCases } from '@/lib/mock/mockControls';
 import {
   PropertyType,
   ListingType,
@@ -156,18 +157,20 @@ export const propertiesRouter = router({
     .input(PropertyFiltersSchema)
     .query(async ({ input }) => {
       // MOCK: Replace with Supabase query — SELECT * FROM properties WHERE ...
-      await new Promise((r) => setTimeout(r, 250));
+      return withMockControl('failPropertiesList', () => {
+        const filtered = applyFilters(mockProperties, input);
+        const { items, total, totalPages } = paginate(filtered, input.page, input.limit);
 
-      const filtered = applyFilters(mockProperties, input);
-      const { items, total, totalPages } = paginate(filtered, input.page, input.limit);
+        const processedItems = applyEdgeCases(items, 'list');
 
-      return {
-        items,
-        total,
-        page: input.page,
-        limit: input.limit,
-        totalPages,
-      } satisfies PropertySearchResponse;
+        return {
+          items: processedItems,
+          total: processedItems.length,
+          page: input.page,
+          limit: input.limit,
+          totalPages,
+        } satisfies PropertySearchResponse;
+      });
     }),
 
   /** Fetch a single property by ID, enriched with agent/owner details. */
@@ -175,28 +178,30 @@ export const propertiesRouter = router({
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
       // MOCK: Replace with Supabase query — SELECT * FROM properties WHERE id = $1
-      await new Promise((r) => setTimeout(r, 250));
+      return withMockControl('failPropertyDetail', () => {
+        const property = mockProperties.find((p) => p.id === input.id);
+        if (!property) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: `Property ${input.id} not found.` });
+        }
 
-      const property = mockProperties.find((p) => p.id === input.id);
-      if (!property) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: `Property ${input.id} not found.` });
-      }
+        const agent = property.agentId
+          ? mockAgents.find((a) => a.id === property.agentId) ?? null
+          : null;
+        const owner = mockUsers.find((u) => u.id === property.ownerId) ?? null;
 
-      const agent = property.agentId
-        ? mockAgents.find((a) => a.id === property.agentId) ?? null
-        : null;
-      const owner = mockUsers.find((u) => u.id === property.ownerId) ?? null;
+        const propertyData = {
+          ...property,
+          viewsCount: viewCounts.get(property.id) ?? property.viewsCount,
+          agentDetails: agent
+            ? { id: agent.id, ceaNumber: agent.ceaNumber, agencyName: agent.agencyName, ratings: agent.ratings }
+            : null,
+          ownerDetails: owner
+            ? { id: owner.id, singpassVerified: owner.singpassVerification.verified }
+            : null,
+        };
 
-      return {
-        ...property,
-        viewsCount: viewCounts.get(property.id) ?? property.viewsCount,
-        agentDetails: agent
-          ? { id: agent.id, ceaNumber: agent.ceaNumber, agencyName: agent.agencyName, ratings: agent.ratings }
-          : null,
-        ownerDetails: owner
-          ? { id: owner.id, singpassVerified: owner.singpassVerification.verified }
-          : null,
-      };
+        return applyEdgeCases(propertyData, 'detail');
+      });
     }),
 
   /** Return the first 8 featured, active properties. */
@@ -247,18 +252,20 @@ export const propertiesRouter = router({
       //   .select(PROPERTY_CARD_FIELDS, { count: 'exact' })
       //   .eq('owner_id', input.ownerId)
       //   .range(start, end)
-      await new Promise((r) => setTimeout(r, 250));
+      return withMockControl('failPropertiesList', () => {
+        const ownerProperties = mockProperties.filter((p) => p.ownerId === input.ownerId);
+        const { start, end } = getPaginationRange(input.page, input.limit);
+        const paginatedProperties = ownerProperties.slice(start, end + 1);
 
-      const ownerProperties = mockProperties.filter((p) => p.ownerId === input.ownerId);
-      const { start, end } = getPaginationRange(input.page, input.limit);
-      const paginatedProperties = ownerProperties.slice(start, end + 1);
+        const processedItems = applyEdgeCases(paginatedProperties, 'list');
 
-      return createPaginatedResponse(
-        paginatedProperties,
-        ownerProperties.length,
-        input.page,
-        input.limit
-      );
+        return createPaginatedResponse(
+          processedItems,
+          ownerProperties.length,
+          input.page,
+          input.limit
+        );
+      });
     }),
 
   /** Return verification level and required documents for a listing. */

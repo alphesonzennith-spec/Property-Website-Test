@@ -56,11 +56,11 @@ const DISTRICT_OPTIONS = [
   { value: 'D28', label: 'D28 – Seletar / Yio Chu Kang' },
 ];
 const PROPERTY_TYPE_OPTIONS = [
-  { value: 'hdb', label: 'HDB' },
-  { value: 'condo', label: 'Condo' },
-  { value: 'landed', label: 'Landed' },
-  { value: 'ec', label: 'Executive Condo (EC)' },
-  { value: 'commercial', label: 'Commercial' },
+  { value: 'HDB', label: 'HDB' },
+  { value: 'Condo', label: 'Condo' },
+  { value: 'Landed', label: 'Landed' },
+  { value: 'EC', label: 'Executive Condo (EC)' },
+  { value: 'Commercial', label: 'Commercial' },
 ];
 
 // --- Multi-select Filter Component ---
@@ -173,8 +173,8 @@ export function HeroSearch() {
             type="button"
             onClick={() => setCategory('residential')}
             className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${category === 'residential'
-                ? 'bg-white text-[#1E293B] shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+              ? 'bg-white text-[#1E293B] shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
               }`}
           >
             <Home className="w-3.5 h-3.5" />
@@ -184,8 +184,8 @@ export function HeroSearch() {
             type="button"
             onClick={() => setCategory('commercial')}
             className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${category === 'commercial'
-                ? 'bg-white text-[#1E293B] shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+              ? 'bg-white text-[#1E293B] shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
               }`}
           >
             <Building2 className="w-3.5 h-3.5" />
@@ -203,8 +203,8 @@ export function HeroSearch() {
             type="button"
             onClick={() => { setTab(t); setSelectedPrices([]); }}
             className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${tab === t
-                ? 'bg-[#F59E0B] text-white shadow-sm'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ? 'bg-[#F59E0B] text-white shadow-sm'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
           >
             {t === 'buy' ? 'BUY' : 'RENT'}

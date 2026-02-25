@@ -13,7 +13,7 @@ export function createSingpassProvider(useMock: boolean): OAuthConfig<MyInfoPers
     id: 'singpass',
     name: 'Singpass',
     type: 'oauth',
-    version: '2.0',
+
     checks: ['state', 'pkce'],
 
     authorization: {
@@ -36,7 +36,7 @@ export function createSingpassProvider(useMock: boolean): OAuthConfig<MyInfoPers
     },
 
     token: {
-      url: async (params) => {
+      url: async (params: any) => {
         const tokens = await client.exchangeCodeForToken(
           params.code,
           params.codeVerifier
@@ -46,7 +46,7 @@ export function createSingpassProvider(useMock: boolean): OAuthConfig<MyInfoPers
     },
 
     userinfo: {
-      url: async (tokens) => {
+      url: async (tokens: any) => {
         // In mock mode, return fake MyInfo data
         if (useMock) {
           return {
