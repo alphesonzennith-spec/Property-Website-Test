@@ -20,6 +20,9 @@ import {
 
 // ── In-memory view counter ────────────────────────────────────────────────────
 // MOCK: Replace with Supabase query — UPDATE properties SET views_count = views_count + 1
+// SUPABASE: This Map is not needed — views_count is persisted directly on the properties table.
+// Atomic increments are handled by the increment_property_views RPC in the incrementViews procedure.
+// Delete this entire Map and its initialization when switching to Supabase.
 const viewCounts = new Map<string, number>(
   mockProperties.map((p) => [p.id, p.viewsCount])
 );
@@ -158,23 +161,74 @@ export const propertiesRouter = router({
     .input(PropertyFiltersSchema)
     .query(async ({ input }) => {
       // MOCK: Replace with Supabase query — SELECT * FROM properties WHERE ...
-      /* SUPABASE:
-      const { from, to } = paginationParams(input.page, input.limit);
+      /* SUPABASE (uncomment when database is connected):
+      const { start, end } = getPaginationRange(input.page, input.limit);
       let query = supabase
         .from('properties')
-        .select(PROPERTY_LIST_FIELDS, { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range(from, to);
+        .select(
+          `${PROPERTY_LIST_FIELDS}, property_images(url, is_primary, order_index)`,
+          { count: 'exact' }
+        );
 
-      if (input.propertyType) query = query.eq('property_type', input.propertyType);
-      if (input.district) query = query.eq('district', input.district);
-      if (input.priceMin) query = query.gte('price', input.priceMin);
-      if (input.priceMax) query = query.lte('price', input.priceMax);
-      if (input.bedroomsMin) query = query.gte('bedrooms', input.bedroomsMin);
-      if (input.keyword) query = query.ilike('address', `%${input.keyword}%`);
+      // Scalar column filters
+      if (input.listingType)            query = query.eq('listing_type', input.listingType);
+      if (input.propertyType)           query = query.eq('property_type', input.propertyType);
+      if (input.district)               query = query.eq('district', input.district);
+      if (input.hdbTown)                query = query.eq('hdb_town', input.hdbTown);
+      if (input.hdbRoomType)            query = query.eq('hdb_room_type', input.hdbRoomType);
+      if (input.priceMin !== undefined) query = query.gte('price', input.priceMin);
+      if (input.priceMax !== undefined) query = query.lte('price', input.priceMax);
+      if (input.bedroomsMin !== undefined)  query = query.gte('bedrooms', input.bedroomsMin);
+      if (input.bedroomsMax !== undefined)  query = query.lte('bedrooms', input.bedroomsMax);
+      if (input.bathroomsMin !== undefined) query = query.gte('bathrooms', input.bathroomsMin);
+      if (input.bathroomsMax !== undefined) query = query.lte('bathrooms', input.bathroomsMax);
+      if (input.floorAreaMin !== undefined) query = query.gte('floor_area_sqft', input.floorAreaMin);
+      if (input.floorAreaMax !== undefined) query = query.lte('floor_area_sqft', input.floorAreaMax);
+      if (input.furnishing)             query = query.eq('furnishing', input.furnishing);
+      if (input.tenure)                 query = query.eq('tenure', input.tenure);
+      if (input.status)                 query = query.eq('status', input.status);
+      if (input.verificationLevel)      query = query.eq('verification_level', input.verificationLevel);
+      if (input.listingSource)          query = query.eq('listing_source', input.listingSource);
+      if (input.featured !== undefined) query = query.eq('featured', input.featured);
+      if (input.qualityScoreMin !== undefined)
+        query = query.gte('listing_quality_score', input.qualityScoreMin);
+
+      // Keyword: full-text search across address, AI description, and HDB town
+      if (input.keyword) {
+        query = query.or(
+          `address.ilike.%${input.keyword}%,` +
+          `ai_generated_description.ilike.%${input.keyword}%,` +
+          `hdb_town.ilike.%${input.keyword}%`
+        );
+      }
+
+      // ownerSingpassVerified: sub-query to get owner IDs with matching verification status
+      if (input.ownerSingpassVerified !== undefined) {
+        const { data: svRows } = await supabase
+          .from('singpass_verifications')
+          .select('user_id')
+          .eq('verified', input.ownerSingpassVerified);
+        const ownerIds = (svRows ?? []).map((r) => r.user_id);
+        query = query.in('owner_id', ownerIds);
+      }
+
+      // Sort
+      switch (input.sortBy) {
+        case 'price_asc':     query = query.order('price', { ascending: true }); break;
+        case 'price_desc':    query = query.order('price', { ascending: false }); break;
+        case 'psf_asc':       query = query.order('psf', { ascending: true, nullsFirst: false }); break;
+        case 'psf_desc':      query = query.order('psf', { ascending: false, nullsFirst: false }); break;
+        case 'most_viewed':   query = query.order('views_count', { ascending: false }); break;
+        case 'quality_score': query = query.order('listing_quality_score', { ascending: false, nullsFirst: false }); break;
+        case 'newest':
+        default:              query = query.order('created_at', { ascending: false });
+      }
+
+      // Paginate (must be last)
+      query = query.range(start, end);
 
       const { data: result, error, count } = await query;
-      handleSupabaseError(error);
+      if (error) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
       */
       return withMockControl('failPropertiesList', () => {
         const filtered = applyFilters(mockProperties, input);
@@ -197,15 +251,27 @@ export const propertiesRouter = router({
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
       // MOCK: Replace with Supabase query — SELECT * FROM properties WHERE id = $1
-      /* SUPABASE:
+      /* SUPABASE (uncomment when database is connected):
       const { data: result, error } = await supabase
         .from('properties')
-        .select(`${PROPERTY_DETAIL_FIELDS}, agents(id, cea_number, agency_name, ratings), users!owner_id(id, singpass_verified)`)
+        .select(`
+          ${PROPERTY_DETAIL_FIELDS},
+          property_images(url, is_primary, order_index, type),
+          agent:agents!agent_id(
+            id,
+            cea_number,
+            agency_name,
+            ratings
+          ),
+          owner:profiles!owner_id(
+            id,
+            singpass_verifications(verified)
+          )
+        `)
         .eq('id', input.id)
         .single();
 
       if (error) throw new TRPCError({ code: 'NOT_FOUND', message: `Property ${input.id} not found.` });
-      handleSupabaseError(error);
       */
       return withMockControl('failPropertyDetail', () => {
         const property = mockProperties.find((p) => p.id === input.id);
@@ -480,16 +546,44 @@ export const propertiesRouter = router({
       }).merge(paginationSchema)
     )
     .query(async ({ input }) => {
-      /* SUPABASE:
-      const { from, to } = paginationParams(input.page, input.limit);
-      const { data: result, error, count } = await supabase
-        .from('transactions')
-        .select(`${TRANSACTION_HISTORY_FIELDS}, properties!inner(address, floor_area_sqft, floor_level, unit_number, district, property_type)`, { count: 'exact' })
-        .eq('properties.district', anchorDistrict)
-        .order('transaction_date', { ascending: false })
-        .range(from, to);
+      /* SUPABASE (uncomment when database is connected):
+      const { start, end } = getPaginationRange(input.page, input.limit);
 
-      handleSupabaseError(error);
+      // Step 1: Resolve anchor district from postal code
+      const { data: anchorProp } = await supabase
+        .from('properties')
+        .select('district, property_type')
+        .eq('postal_code', input.postalCode)
+        .limit(1)
+        .maybeSingle();
+
+      const anchorDistrict = anchorProp?.district ?? 'D18';
+      const anchorType = input.propertyType ?? anchorProp?.property_type ?? undefined;
+
+      // Step 2: Collect property IDs in that district (and optionally type) for the JOIN filter
+      let propQuery = supabase
+        .from('properties')
+        .select('id')
+        .eq('district', anchorDistrict);
+      if (anchorType) propQuery = propQuery.eq('property_type', anchorType);
+      const { data: districtProps } = await propQuery;
+      const propertyIds = (districtProps ?? []).map((p) => p.id);
+
+      // Step 3: Fetch paginated transactions for those properties
+      const { data: result, error, count } = await supabase
+        .from('property_transactions')
+        .select(
+          `id, transaction_date, price, psf,
+           property:properties!property_id(
+             address, floor_area_sqft, floor_level, unit_number, district, property_type
+           )`,
+          { count: 'exact' }
+        )
+        .in('property_id', propertyIds)
+        .order('transaction_date', { ascending: false })
+        .range(start, end);
+
+      if (error) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
       */
       await new Promise((r) => setTimeout(r, 300));
 
@@ -567,14 +661,43 @@ export const propertiesRouter = router({
       })
     )
     .query(async ({ input }) => {
-      /* SUPABASE:
-      const { data: result, error } = await supabase.rpc('calculate_median_psf', {
+      /* SUPABASE (uncomment when database is connected):
+      // Step 1: Resolve district and property type from postal code
+      const { data: anchorProp } = await supabase
+        .from('properties')
+        .select('district, property_type, floor_area_sqft')
+        .eq('postal_code', input.postalCode)
+        .limit(1)
+        .maybeSingle();
+
+      const district = anchorProp?.district ?? 'D18';
+      const propType = input.propertyType ?? anchorProp?.property_type ?? 'HDB';
+      const floorArea = input.targetFloorArea ?? anchorProp?.floor_area_sqft ?? 1000;
+
+      // Step 2: Compute median PSF using a Supabase RPC (requires the function below)
+      // Create this function in Supabase SQL editor:
+      // CREATE OR REPLACE FUNCTION calculate_median_psf(p_district TEXT, p_property_type TEXT)
+      // RETURNS NUMERIC LANGUAGE SQL AS $$
+      //   SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY t.psf)
+      //   FROM property_transactions t
+      //   JOIN properties p ON p.id = t.property_id
+      //   WHERE p.district = p_district AND p.property_type = p_property_type AND t.psf > 0;
+      // $$;
+      const { data: medianRow, error } = await supabase.rpc('calculate_median_psf', {
         p_district: district,
-        p_property_type: propType
+        p_property_type: propType,
+      });
+      if (error) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+      if (!medianRow) throw new TRPCError({ code: 'NOT_FOUND', message: 'Insufficient comparable transactions to estimate value.' });
+
+      // Step 3: Also compute district-wide median for vsDistrictPct context
+      const { data: districtMedianRow } = await supabase.rpc('calculate_median_psf', {
+        p_district: district,
+        p_property_type: null,  // null = all types in district
       });
 
-      handleSupabaseError(error);
-      // Note: Create Supabase function for percentile_cont aggregate
+      const medianPsf: number = medianRow;
+      const districtMedianPsf: number = districtMedianRow ?? medianPsf;
       */
       await new Promise((r) => setTimeout(r, 300));
 

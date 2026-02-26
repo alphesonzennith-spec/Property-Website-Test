@@ -15,15 +15,24 @@ export const usersRouter = router({
     .query(async ({ input }) => {
       // MOCK: Replace with Supabase query — SELECT * FROM user_profiles WHERE id = $1
       // SINGPASS: Add Singpass verification check here — verify caller is fetching their own profile or is Admin
-      /* SUPABASE:
-      const { data: result, error } = await supabase
-        .from('user_profiles')
-        .select(USER_PROFILE_FIELDS)
+      /* SUPABASE (uncomment when database is connected):
+      // profiles extends auth.users — it is the correct table (not user_profiles)
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, email, phone, role, residency_status, preferences, verification_badges, created_at, updated_at')
         .eq('id', input.userId)
         .single();
 
-      if (error) throw new TRPCError({ code: 'NOT_FOUND', message: `User ${input.userId} not found.` });
-      handleSupabaseError(error);
+      if (profileError) throw new TRPCError({ code: 'NOT_FOUND', message: `User ${input.userId} not found.` });
+
+      // Fetch Singpass verification row separately (may not exist for unverified users)
+      const { data: verification } = await supabase
+        .from('singpass_verifications')
+        .select('verified, verified_at, verification_method, name, nationality, date_of_birth, home_address')
+        .eq('user_id', input.userId)
+        .maybeSingle();
+
+      const result = { ...profile, singpassVerification: verification ?? null };
       */
       await new Promise((r) => setTimeout(r, 250));
 
@@ -40,15 +49,32 @@ export const usersRouter = router({
     .query(async ({ input }) => {
       // MOCK: Replace with Supabase query — SELECT * FROM family_groups WHERE id = $1 with members JOIN
       // SINGPASS: Add Singpass verification check here — verify caller is a member of this family group
-      /* SUPABASE:
+      /* SUPABASE (uncomment when database is connected):
+      // family_members is the correct junction table (not family_group_members)
+      // Member display name and singpass status live in profiles + singpass_verifications
       const { data: result, error } = await supabase
         .from('family_groups')
-        .select('id, name, eligibility_summary, members:family_group_members(user_id, role, users!inner(id, name, singpass_verified))')
+        .select(`
+          id,
+          name,
+          eligibility_summary,
+          head_user_id,
+          members:family_members(
+            id,
+            user_id,
+            role,
+            relationship,
+            added_at,
+            profile:profiles!user_id(
+              email,
+              singpass_verifications(verified, name)
+            )
+          )
+        `)
         .eq('id', input.familyGroupId)
         .single();
 
       if (error) throw new TRPCError({ code: 'NOT_FOUND', message: `Family group ${input.familyGroupId} not found.` });
-      handleSupabaseError(error);
       */
       await new Promise((r) => setTimeout(r, 250));
 
@@ -75,15 +101,42 @@ export const usersRouter = router({
     .query(async ({ input }) => {
       // MOCK: Replace with Supabase query — JOIN user_profiles + family_groups + eligibility_summaries
       // SINGPASS: Add Singpass verification check here — assert singpassVerified before exposing eligibility
-      /* SUPABASE:
-      const { data: result, error } = await supabase
-        .from('user_profiles')
-        .select('id, residency_status, singpass_verified, family_group_id, family_groups(name, eligibility_summary)')
+      /* SUPABASE (uncomment when database is connected):
+      // profiles has residency_status. singpass_verifications has verified.
+      // Family membership is via family_members or family_groups.head_user_id — no direct FK on profiles.
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('id, residency_status')
         .eq('id', input.userId)
         .single();
 
       if (error) throw new TRPCError({ code: 'NOT_FOUND', message: `User ${input.userId} not found.` });
-      handleSupabaseError(error);
+
+      const { data: verification } = await supabase
+        .from('singpass_verifications')
+        .select('verified')
+        .eq('user_id', input.userId)
+        .maybeSingle();
+
+      // Find family group where user is a member
+      const { data: membership } = await supabase
+        .from('family_members')
+        .select('family_group_id, family_groups!inner(id, name, eligibility_summary)')
+        .eq('user_id', input.userId)
+        .limit(1)
+        .maybeSingle();
+
+      // Also check if user is head of a family group (no family_members row for head)
+      const { data: headGroup } = !membership
+        ? await supabase
+            .from('family_groups')
+            .select('id, name, eligibility_summary')
+            .eq('head_user_id', input.userId)
+            .limit(1)
+            .maybeSingle()
+        : { data: null };
+
+      const familyGroup = membership?.family_groups ?? headGroup ?? null;
       */
       await new Promise((r) => setTimeout(r, 250));
 
@@ -119,24 +172,46 @@ export const usersRouter = router({
       //   .eq('owner_id', input.userId)
       //   .range(start, end)
       // SINGPASS: Add Singpass verification check here — verify caller is the portfolio owner or Admin
-      /* SUPABASE:
-      const { from, to } = paginationParams(input.page, input.limit);
+      /* SUPABASE (uncomment when database is connected):
+      const { start, end } = getPaginationRange(input.page, input.limit);
+
+      // Owned properties (paginated — potentially the largest list)
       const { data: ownedData, error: ownedError, count: ownedCount } = await supabase
         .from('properties')
-        .select(PROPERTY_CARD_FIELDS, { count: 'exact' })
+        .select(`${PROPERTY_CARD_FIELDS}, property_images(url, is_primary)`, { count: 'exact' })
         .eq('owner_id', input.userId)
         .order('created_at', { ascending: false })
-        .range(from, to);
+        .range(start, end);
 
-      handleSupabaseError(ownedError);
+      if (ownedError) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: ownedError.message });
 
-      const { data: transactions, error: txError } = await supabase
-        .from('user_transactions')
-        .select(`${TRANSACTION_DETAIL_FIELDS}, properties!inner(${PROPERTY_CARD_FIELDS})`)
-        .eq('user_id', input.userId)
+      // Bought: transactions where user is buyer
+      const { data: boughtTx, error: boughtError } = await supabase
+        .from('property_transactions')
+        .select(`
+          id, transaction_date, price, psf,
+          property:properties!property_id(${PROPERTY_CARD_FIELDS}, property_images(url, is_primary))
+        `)
+        .eq('buyer_id', input.userId)
         .order('transaction_date', { ascending: false });
 
-      handleSupabaseError(txError);
+      if (boughtError) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: boughtError.message });
+
+      // Sold: transactions where user is seller
+      const { data: soldTx, error: soldError } = await supabase
+        .from('property_transactions')
+        .select(`
+          id, transaction_date, price, psf,
+          property:properties!property_id(${PROPERTY_CARD_FIELDS}, property_images(url, is_primary))
+        `)
+        .eq('seller_id', input.userId)
+        .order('transaction_date', { ascending: false });
+
+      if (soldError) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: soldError.message });
+
+      // Note: Rent history is not tracked in the current schema (no rented_by_id FK).
+      // A user_saved_properties table exists but tracks saves, not active tenancies.
+      // Add a tenancies table if rent history tracking is required.
       */
       await new Promise((r) => setTimeout(r, 250));
 

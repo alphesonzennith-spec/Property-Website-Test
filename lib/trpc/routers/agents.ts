@@ -47,16 +47,39 @@ export const agentsRouter = router({
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
       // MOCK: Replace with Supabase query — SELECT * FROM agents WHERE id = $1; SELECT * FROM properties WHERE agent_id = $1 AND status = 'Active'
-      /* SUPABASE:
+      /* SUPABASE (uncomment when database is connected):
+      // Agents table does not store name/phone/email directly — those live on profiles.
+      // Join profiles via profile_id to get contact and display fields.
       const { data: result, error } = await supabase
         .from('agents')
-        .select(`${AGENT_PROFILE_FIELDS}, properties!inner(${PROPERTY_CARD_FIELDS})`)
+        .select(`
+          id,
+          cea_number,
+          cea_status,
+          agency_name,
+          agency_license_number,
+          specializations,
+          years_experience,
+          total_transactions,
+          active_listings,
+          ratings,
+          tier,
+          profile:profiles!profile_id(
+            id,
+            email,
+            phone,
+            verification_badges
+          ),
+          properties!agent_id(
+            ${PROPERTY_CARD_FIELDS},
+            property_images(url, is_primary)
+          )
+        `)
         .eq('id', input.id)
         .eq('properties.status', 'Active')
         .single();
 
       if (error) throw new TRPCError({ code: 'NOT_FOUND', message: `Agent ${input.id} not found.` });
-      handleSupabaseError(error);
       */
       await new Promise((r) => setTimeout(r, 250));
 
@@ -80,14 +103,35 @@ export const agentsRouter = router({
     .input(z.object({ agentId: z.string() }))
     .query(async ({ input }) => {
       // MOCK: Replace with Supabase query — SELECT * FROM agent_transactions WHERE agent_id = $1
-      /* SUPABASE:
+      /* SUPABASE (uncomment when database is connected):
+      // No agent_transactions table exists in the schema.
+      // Derive portfolio from property_transactions where the transacted property was listed by this agent.
+      // First get all property IDs the agent managed, then fetch transactions for those properties.
+      const { data: agentProps } = await supabase
+        .from('properties')
+        .select('id')
+        .eq('agent_id', input.agentId);
+
+      const agentPropertyIds = (agentProps ?? []).map((p) => p.id);
+
       const { data: result, error } = await supabase
-        .from('agent_transactions')
-        .select('id, price, transaction_date, properties!inner(latitude, longitude, address, property_type, district)')
-        .eq('agent_id', input.agentId)
+        .from('property_transactions')
+        .select(`
+          id,
+          price,
+          transaction_date,
+          property:properties!property_id(
+            latitude,
+            longitude,
+            address,
+            property_type,
+            district
+          )
+        `)
+        .in('property_id', agentPropertyIds)
         .order('transaction_date', { ascending: false });
 
-      handleSupabaseError(error);
+      if (error) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
       */
       await new Promise((r) => setTimeout(r, 250));
 

@@ -149,30 +149,71 @@ export function useAuth(): AuthState {
     // Auth actions
     const loginWithSingpass = () => {
         console.log("SINGPASS_SWAP: Would redirect to /api/singpass/authorize");
+        // SUPABASE (uncomment when Singpass backend is connected):
+        // router.push('/api/singpass/authorize');
+        // The /api/singpass/authorize route handles PKCE initiation:
+        //   1. Generate code_verifier + code_challenge (crypto.subtle)
+        //   2. Store code_verifier in a secure httpOnly session cookie
+        //   3. Build Singpass authorization URL with client_id, redirect_uri, scope, code_challenge
+        //   4. Redirect browser to Singpass authorization server
+        // See: docs/plans/2026-02-25-singpass-myinfo-integration-design.md
         console.log("Phase 5.1 will implement the real PKCE OAuth flow here");
         setGlobalMockUserId(ACTIVE_MOCK_USER_ID === "user_logged_out" ? "user-001" : ACTIVE_MOCK_USER_ID); // Mock successful singpass login
     };
 
     const loginWithEmail = async (email: string, password: string) => {
         console.log("SINGPASS_SWAP: Would call supabase.auth.signInWithPassword");
+        // SUPABASE (uncomment when Supabase Auth is connected):
+        // setIsLoading(true);
+        // const { error } = await supabase.auth.signInWithPassword({ email, password });
+        // setIsLoading(false);
+        // if (error) throw new Error(error.message);
+        // Session state will be updated automatically via supabase.auth.onAuthStateChange listener.
         console.log("Phase 5.1 will implement the real email login here");
         setGlobalMockUserId(ACTIVE_MOCK_USER_ID === "user_logged_out" ? "user-001" : ACTIVE_MOCK_USER_ID); // Mock successful login
     };
 
     const loginWithGoogle = () => {
         console.log("SINGPASS_SWAP: Would redirect to Google OAuth");
+        // SUPABASE (uncomment when Supabase Auth is connected):
+        // await supabase.auth.signInWithOAuth({
+        //   provider: 'google',
+        //   options: {
+        //     redirectTo: `${window.location.origin}/auth/callback`,
+        //     scopes: 'openid email profile',
+        //   },
+        // });
+        // Profile picture from Google is available at session.user.user_metadata.avatar_url
+        // (lh3.googleusercontent.com — already whitelisted in next.config.ts remotePatterns)
         console.log("Phase 5.1 will implement the real Google login here");
         setGlobalMockUserId(ACTIVE_MOCK_USER_ID === "user_logged_out" ? "user-001" : ACTIVE_MOCK_USER_ID); // Mock successful login
     };
 
     const logout = () => {
         console.log("SINGPASS_SWAP: Would call supabase.auth.signOut()");
+        // SUPABASE (uncomment when Supabase Auth is connected):
+        // await supabase.auth.signOut();
+        // onAuthStateChange fires with event='SIGNED_OUT', clearing session state across all components.
+        // Remove the setGlobalMockUserId call and the global pub/sub mechanism entirely.
         console.log("Phase 5.1 will implement the real logout here");
         setGlobalMockUserId("user_logged_out"); // synchronize logout across all components
     };
 
     const refreshVerificationStatus = () => {
         console.log("SINGPASS_SWAP: Would refresh user session from Supabase to get latest verification status");
+        // SUPABASE (uncomment when Supabase Auth is connected):
+        // const { data: { session } } = await supabase.auth.refreshSession();
+        // if (!session?.user) return;
+        //
+        // const { data: verification } = await supabase
+        //   .from('singpass_verifications')
+        //   .select('verified, verified_at, verification_method, failure_reason, name, nationality, date_of_birth, home_address, myinfo_snapshot')
+        //   .eq('user_id', session.user.id)
+        //   .maybeSingle();
+        //
+        // Update local state with the fresh verification row to re-derive
+        // isSingpassVerified, verificationStatus, legalName, residentialStatus, etc.
+        // This is called by the Singpass callback page after the OAuth flow completes.
         console.log("Phase 5.1 will implement real token refresh here");
     };
 

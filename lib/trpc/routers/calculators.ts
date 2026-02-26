@@ -17,16 +17,44 @@ export const calculatorsRouter = router({
    * LIMIT 1
    */
   getRegulatoryRates: publicProcedure.query(async () => {
-    /* SUPABASE:
-    const { data: result, error } = await supabase
+    /* SUPABASE (uncomment when database is connected):
+    // regulatory_config stores one row per section_key (not one row for all config).
+    // Fetch all current rows and reassemble into the RegulatoryConfig shape.
+    const { data: rows, error } = await supabase
       .from('regulatory_config')
-      .select('*')
-      .order('effective_date', { ascending: false })
-      .limit(1)
-      .single();
+      .select('section_key, config_data');
 
-    handleSupabaseError(error);
-    const validated = RegulatoryConfigSchema.parse(result);
+    if (error) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+
+    const byKey = Object.fromEntries((rows ?? []).map((r) => [r.section_key, r.config_data]));
+
+    // Map section_key rows → RegulatoryConfig shape (must match seed data in SupabaseSchema.md)
+    const config = {
+      stampDuty: {
+        bsd:  byKey['stamp_duty_bsd'],
+        absd: byKey['stamp_duty_absd'],
+        ssd:  byKey['stamp_duty_ssd'],
+      },
+      borrowing: {
+        tdsr: byKey['borrowing_tdsr'],
+        msr:  byKey['borrowing_msr'],
+        ltv:  byKey['borrowing_ltv'],
+      },
+      mortgage: {
+        hdbLoan:  byKey['mortgage_hdb_loan'],
+        bankLoan: byKey['mortgage_bank_loan'],
+      },
+      cpf: {
+        oa: byKey['cpf_oa'],
+        sa: byKey['cpf_sa'],
+      },
+      propertyTax:     byKey['property_tax'],
+      maintenanceFees: byKey['maintenance_fees'],
+      misc:            byKey['misc'],
+      cpfRates:        byKey['cpf_rates'],
+    };
+
+    const validated = RegulatoryConfigSchema.parse(config);
     */
     return withMockControl('failRegulatoryRates', async () => {
       try {
@@ -56,27 +84,43 @@ export const calculatorsRouter = router({
       })
     )
     .query(async ({ input }) => {
-      /* SUPABASE:
-      const columnMap: Record<string, string> = {
-        stampDuty: 'stamp_duty',
-        borrowing: 'borrowing',
-        mortgage: 'mortgage',
-        cpf: 'cpf',
-        propertyTax: 'property_tax',
-        misc: 'misc',
-        cpfRates: 'cpf_rates',
-        maintenanceFees: 'maintenance_fees',
+      /* SUPABASE (uncomment when database is connected):
+      // regulatory_config uses row-per-section_key, not per-column.
+      // Map the app section name to the relevant section_key(s) in the database.
+      const sectionKeyMap: Record<string, string[]> = {
+        stampDuty:        ['stamp_duty_bsd', 'stamp_duty_absd', 'stamp_duty_ssd'],
+        borrowing:        ['borrowing_tdsr', 'borrowing_msr', 'borrowing_ltv'],
+        mortgage:         ['mortgage_hdb_loan', 'mortgage_bank_loan'],
+        cpf:              ['cpf_oa', 'cpf_sa'],
+        propertyTax:      ['property_tax'],
+        maintenanceFees:  ['maintenance_fees'],
+        misc:             ['misc'],
+        cpfRates:         ['cpf_rates'],
       };
 
-      const column = columnMap[input.section];
-      const { data: result, error } = await supabase
-        .from('regulatory_config')
-        .select(column)
-        .order('effective_date', { ascending: false })
-        .limit(1)
-        .single();
+      const keys = sectionKeyMap[input.section];
+      if (!keys) throw new TRPCError({ code: 'NOT_FOUND', message: `Regulatory section '${input.section}' not found` });
 
-      handleSupabaseError(error);
+      const { data: rows, error } = await supabase
+        .from('regulatory_config')
+        .select('section_key, config_data')
+        .in('section_key', keys);
+
+      if (error) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+
+      // For multi-key sections, reassemble into the expected nested shape
+      const byKey = Object.fromEntries((rows ?? []).map((r) => [r.section_key, r.config_data]));
+      const sectionAssemblers: Record<string, unknown> = {
+        stampDuty:       { bsd: byKey['stamp_duty_bsd'], absd: byKey['stamp_duty_absd'], ssd: byKey['stamp_duty_ssd'] },
+        borrowing:       { tdsr: byKey['borrowing_tdsr'], msr: byKey['borrowing_msr'], ltv: byKey['borrowing_ltv'] },
+        mortgage:        { hdbLoan: byKey['mortgage_hdb_loan'], bankLoan: byKey['mortgage_bank_loan'] },
+        cpf:             { oa: byKey['cpf_oa'], sa: byKey['cpf_sa'] },
+        propertyTax:     byKey['property_tax'],
+        maintenanceFees: byKey['maintenance_fees'],
+        misc:            byKey['misc'],
+        cpfRates:        byKey['cpf_rates'],
+      };
+      const result = sectionAssemblers[input.section];
       */
       try {
         // Simulate database latency
@@ -107,15 +151,19 @@ export const calculatorsRouter = router({
    * MOCK: Replace with targeted Supabase query
    */
   getBSDTiers: publicProcedure.query(async () => {
-    /* SUPABASE:
-    const { data: result, error } = await supabase
+    /* SUPABASE (uncomment when database is connected):
+    // Fetch the stamp_duty_bsd row and extract tiers from config_data JSONB.
+    // Note: Supabase JS client does not support -> JSONB operators in .select().
+    // Fetch the full config_data and access tiers in JS instead.
+    const { data: row, error } = await supabase
       .from('regulatory_config')
-      .select('stamp_duty->bsd->tiers')
-      .order('effective_date', { ascending: false })
-      .limit(1)
+      .select('config_data')
+      .eq('section_key', 'stamp_duty_bsd')
       .single();
 
-    handleSupabaseError(error);
+    if (error) throw new TRPCError({ code: 'NOT_FOUND', message: 'BSD config not found' });
+    const bsdTiers = (row.config_data as { tiers?: unknown[] })?.tiers;
+    if (!bsdTiers) throw new TRPCError({ code: 'NOT_FOUND', message: 'BSD tiers not available in regulatory configuration' });
     */
     try {
       await new Promise((r) => setTimeout(r, 250));
@@ -145,15 +193,19 @@ export const calculatorsRouter = router({
    * MOCK: Replace with targeted Supabase query
    */
   getABSDRates: publicProcedure.query(async () => {
-    /* SUPABASE:
-    const { data: result, error } = await supabase
+    /* SUPABASE (uncomment when database is connected):
+    // Fetch the stamp_duty_absd row and extract rates from config_data JSONB.
+    // Note: Supabase JS client does not support -> JSONB operators in .select().
+    // Fetch the full config_data and access rates in JS instead.
+    const { data: row, error } = await supabase
       .from('regulatory_config')
-      .select('stamp_duty->absd->rates')
-      .order('effective_date', { ascending: false })
-      .limit(1)
+      .select('config_data')
+      .eq('section_key', 'stamp_duty_absd')
       .single();
 
-    handleSupabaseError(error);
+    if (error) throw new TRPCError({ code: 'NOT_FOUND', message: 'ABSD config not found' });
+    const absdRates = (row.config_data as { rates?: unknown[] })?.rates;
+    if (!absdRates) throw new TRPCError({ code: 'NOT_FOUND', message: 'ABSD rates not available in regulatory configuration' });
     */
     try {
       await new Promise((r) => setTimeout(r, 250));

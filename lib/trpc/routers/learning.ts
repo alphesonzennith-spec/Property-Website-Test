@@ -9,6 +9,10 @@ import { withMockControl, applyEdgeCases } from '@/lib/mock/mockControls';
 
 // ── In-memory completion store ────────────────────────────────────────────────
 // MOCK: Replace with Supabase query — INSERT INTO user_module_completions (user_id, module_id, completed_at)
+// SUPABASE: This Set is not needed — completions are persisted in learning_module_progress.
+// The correct table is learning_module_progress (user_id, module_id, status, completed_at).
+// Note: The schema does not include a learning_modules table — you must create it to seed module content.
+// Delete this Set entirely when switching to Supabase.
 // Key format: `${userId}:${moduleId}`
 const completions = new Set<string>();
 
@@ -93,18 +97,36 @@ export const learningRouter = router({
     .input(z.object({ moduleId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       // MOCK: Replace with Supabase query — INSERT INTO user_module_completions ON CONFLICT DO NOTHING
-      /* SUPABASE:
+      /* SUPABASE (uncomment when database is connected):
+      // The correct table is learning_module_progress (not user_module_completions).
+      // Fields: user_id, module_id, status, completed_at, last_activity_at (UNIQUE on user_id, module_id).
+      const now = new Date().toISOString();
+
+      // Check whether a row already exists before upserting (to detect alreadyCompleted)
+      const { data: existing } = await supabase
+        .from('learning_module_progress')
+        .select('status, completed_at')
+        .eq('user_id', ctx.userId)
+        .eq('module_id', input.moduleId)
+        .maybeSingle();
+
       const { data: result, error } = await supabase
-        .from('user_module_completions')
+        .from('learning_module_progress')
         .upsert(
-          { user_id: ctx.userId, module_id: input.moduleId, completed_at: new Date().toISOString() },
-          { onConflict: 'user_id,module_id', ignoreDuplicates: false }
+          {
+            user_id: ctx.userId,
+            module_id: input.moduleId,
+            status: 'completed',
+            completed_at: existing?.completed_at ?? now,  // preserve original completion date
+            last_activity_at: now,
+          },
+          { onConflict: 'user_id,module_id' }
         )
-        .select('id, completed_at, created_at')
+        .select('user_id, module_id, completed_at')
         .single();
 
-      handleSupabaseError(error);
-      const alreadyCompleted = result.created_at !== result.completed_at;
+      if (error) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: error.message });
+      const alreadyCompleted = existing?.status === 'completed';
       */
       if (!mockLearningModules.some((m) => m.id === input.moduleId)) {
         throw new TRPCError({ code: 'NOT_FOUND', message: `Learning module ${input.moduleId} not found.` });
