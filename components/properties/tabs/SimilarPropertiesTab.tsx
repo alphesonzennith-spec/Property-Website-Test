@@ -28,7 +28,7 @@ export function SimilarPropertiesTab({ property }: SimilarPropertiesTabProps) {
         price,
         psf: Math.round(price / (property.floorAreaSqft + (Math.random() - 0.5) * 200)),
         district: property.district,
-        imageUrl: property.images[Math.floor(Math.random() * property.images.length)]?.url || '/placeholder.jpg',
+        imageUrl: property.images[Math.floor(Math.random() * property.images.length)]?.url ?? null,
       };
     });
   };
