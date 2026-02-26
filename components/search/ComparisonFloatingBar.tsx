@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+import { PropertyImage } from '@/components/ui/PropertyImage';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -47,18 +47,8 @@ export function ComparisonFloatingBar() {
 
               return (
                 <div key={property.id} className="relative flex-shrink-0">
-                  <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-gray-200">
-                    {primaryImage ? (
-                      <Image
-                        src={primaryImage.url}
-                        alt={property.address}
-                        width={64}
-                        height={64}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-200" />
-                    )}
+                  <div className="relative w-16 h-16 rounded-lg overflow-hidden border-2 border-gray-200">
+                    <PropertyImage src={primaryImage?.url} alt={property.address} sizes="64px" />
                   </div>
                   <button
                     type="button"
