@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import { PropertyImage } from '@/components/ui/PropertyImage';
 import {
   ShieldCheck,
   Shield,
@@ -53,25 +53,6 @@ function formatTenure(tenure: Tenure): string {
   }
 }
 
-function getGradientClass(type: PropertyType): string {
-  switch (type) {
-    case PropertyType.HDB:
-      return 'from-emerald-600 to-emerald-900';
-    case PropertyType.Condo:
-      return 'from-indigo-600 to-indigo-900';
-    case PropertyType.Landed:
-      return 'from-amber-600 to-amber-900';
-    case PropertyType.EC:
-      return 'from-sky-600 to-sky-900';
-    case PropertyType.Commercial:
-      return 'from-rose-600 to-rose-900';
-    case PropertyType.Industrial:
-      return 'from-slate-600 to-slate-900';
-    default:
-      return 'from-gray-600 to-gray-900';
-  }
-}
-
 function getPropertyTypeLabel(property: Property): string {
   if (property.propertyType === PropertyType.HDB && property.hdbRoomType) {
     return `HDB ${property.hdbRoomType}`;
@@ -89,9 +70,6 @@ interface PropertyCardProps {
 export function PropertyCard({ property, className = '' }: PropertyCardProps) {
   const primaryImage =
     property.images.find((img) => img.isPrimary) ?? property.images[0] ?? null;
-
-  const hasImage = primaryImage !== null;
-  const gradientClass = getGradientClass(property.propertyType);
 
   const addressTitle =
     property.address.length > 32
@@ -171,21 +149,11 @@ export function PropertyCard({ property, className = '' }: PropertyCardProps) {
     >
       {/* Image area */}
       <div className="relative overflow-hidden rounded-t-xl flex-shrink-0" style={{ aspectRatio: '16/9' }}>
-        {hasImage ? (
-          <Image
-            src={primaryImage.url}
-            alt={property.address}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-        ) : (
-          <div
-            role="img"
-            aria-label={`${property.propertyType} property placeholder`}
-            className={`w-full h-full bg-gradient-to-br ${gradientClass}`}
-          />
-        )}
+        <PropertyImage
+          src={primaryImage?.url}
+          alt={property.address}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
 
         {/* Bottom gradient overlay */}
         <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/60 to-transparent" />
@@ -419,9 +387,6 @@ export function PropertyCardCompact({ property, className = '' }: PropertyCardCo
   const primaryImage =
     property.images.find((img) => img.isPrimary) ?? property.images[0] ?? null;
 
-  const hasImage = primaryImage !== null;
-  const gradientClass = getGradientClass(property.propertyType);
-
   // Verification icon only
   let VerificationIcon: React.ComponentType<{ className?: string }> = Shield;
   let verificationIconColorClass = '';
@@ -463,23 +428,13 @@ export function PropertyCardCompact({ property, className = '' }: PropertyCardCo
     >
       {/* Left: square image or gradient placeholder */}
       <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-        {hasImage ? (
-          <div className="relative w-full h-full">
-            <Image
-              src={primaryImage.url}
-              alt={property.address}
-              fill
-              className="object-cover"
-              sizes="64px"
-            />
-          </div>
-        ) : (
-          <div
-            role="img"
-            aria-label={`${property.propertyType} property placeholder`}
-            className={`w-full h-full bg-gradient-to-br ${gradientClass}`}
+        <div className="relative w-full h-full">
+          <PropertyImage
+            src={primaryImage?.url}
+            alt={property.address}
+            sizes="64px"
           />
-        )}
+        </div>
       </div>
 
       {/* Middle */}
