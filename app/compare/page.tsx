@@ -3,7 +3,7 @@
 import React, { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
+import { PropertyImage } from '@/components/ui/PropertyImage';
 import { trpc } from '@/lib/trpc/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -65,16 +65,7 @@ function ComparisonContent() {
           <Card key={property.id} className="flex flex-col overflow-hidden">
             {/* Property Image */}
             <div className="aspect-video relative overflow-hidden flex-shrink-0">
-              {primaryImage ? (
-                <Image
-                  src={primaryImage.url}
-                  alt={property.address}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-gray-200" />
-              )}
+              <PropertyImage src={primaryImage?.url} alt={property.address} sizes="(max-width: 768px) 100vw, 33vw" />
             </div>
 
             {/* Property Header */}
