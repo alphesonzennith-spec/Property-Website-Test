@@ -194,6 +194,44 @@ userinfo: { url: async (tokens) => fetchUserInfo(tokens) },
 
 ---
 
+### Mistake: Auth.js v5 custom OAuth provider missing `userinfo.url` (InvalidEndpoints / ClientFetchError)
+
+**Issue:** Auth.js v5's `assertConfig()` runs on **every single request** to `/api/auth/*` — including session checks — and throws `InvalidEndpoints` if the provider lacks both `issuer` and `userinfo.url`. This causes `/api/auth/session` to 500, which `SessionProvider` surfaces as `ClientFetchError` in the browser.
+
+The exact server-side error:
+```
+[auth][error] InvalidEndpoints: Provider "singpass" is missing both `issuer` and `userinfo` endpoint config.
+At least one of them is required.
+GET /api/auth/session 500
+```
+
+This is a **configuration error**, not a database/API error. It will NOT fix itself when external services are connected. JWT session checks are stateless — they never touch a database.
+
+**Root cause:** Providing `userinfo.request` without `userinfo.url`. Auth.js v5 requires `url` to pass validation even when `request` overrides it at runtime.
+
+**Solution:** Always include `userinfo.url` alongside `userinfo.request`. The `request` function takes precedence at runtime; `url` only satisfies the startup validator.
+
+```typescript
+// ✅ CORRECT — url satisfies assertConfig, request handles actual fetch
+userinfo: {
+  url: process.env.SINGPASS_USERINFO_URL || 'https://stg-id.singpass.gov.sg/myinfo/v3/person',
+  async request({ tokens }) { /* custom fetch logic */ },
+},
+
+// ❌ WRONG — request alone fails assertConfig validation
+userinfo: {
+  async request({ tokens }) { /* custom fetch logic */ },
+},
+```
+
+**Debugging tip:** Check the **terminal running `next dev`** (not the browser console) for the actual server-side `[auth][error]` line. The browser only shows the generic `ClientFetchError` message. Auth.js v5 with `debug: true` logs the specific error class and cause server-side.
+
+**Where it matters:**
+- `lib/auth/singpass-provider.ts` — `userinfo.url` must be present
+- Any custom OAuth provider that uses `userinfo.request` without `userinfo.url`
+
+---
+
 ### Mistake: Slider value type mismatch
 
 **Issue:** Shadcn Slider expects `number[]` array, easy to pass single number

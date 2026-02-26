@@ -21,6 +21,11 @@ export function createSingpassProvider(useMock: boolean): OAuthConfig<MyInfoPers
     name: 'Singpass',
     type: 'oauth',
 
+    // Auth.js v5 requires clientId/clientSecret explicitly on every provider.
+    // Auto-detection only works for AUTH_<PROVIDER_ID>_ID convention — we use SINGPASS_CLIENT_ID instead.
+    clientId: process.env.SINGPASS_CLIENT_ID || '',
+    clientSecret: process.env.SINGPASS_CLIENT_SECRET || '',
+
     checks: ['state', 'pkce'],
 
     authorization: {
@@ -33,6 +38,11 @@ export function createSingpassProvider(useMock: boolean): OAuthConfig<MyInfoPers
     token: tokenUrl,
 
     userinfo: {
+      // Auth.js v5 assertConfig requires userinfo.url to exist (even when request() overrides it).
+      // Without url, assertConfig throws InvalidEndpoints on EVERY request — not just OAuth flow.
+      // The request() function takes precedence at runtime; url is never actually fetched.
+      url: process.env.SINGPASS_USERINFO_URL || 'https://stg-id.singpass.gov.sg/myinfo/v3/person',
+
       // Auth.js v5: use 'request' (not 'url') for custom userinfo fetching logic.
       async request({ tokens }: any) {
         // In mock mode, return fake MyInfo data without hitting the real API
