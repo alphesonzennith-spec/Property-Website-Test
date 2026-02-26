@@ -2,7 +2,7 @@ import { Property } from '@/types/property';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Home } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { PropertyImage } from '@/components/ui/PropertyImage';
 
 interface SimilarPropertiesTabProps {
   property: Property;
@@ -60,12 +60,7 @@ export function SimilarPropertiesTab({ property }: SimilarPropertiesTabProps) {
             <Card className="overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer">
               {/* Property Image */}
               <div className="relative aspect-video overflow-hidden bg-gray-100">
-                <Image
-                  src={similarProp.imageUrl}
-                  alt={similarProp.address}
-                  fill
-                  className="object-cover"
-                />
+                <PropertyImage src={similarProp.imageUrl} alt={similarProp.address} sizes="(max-width: 768px) 100vw, 50vw" />
               </div>
 
               {/* Property Details */}
