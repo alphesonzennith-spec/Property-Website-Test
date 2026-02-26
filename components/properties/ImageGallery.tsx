@@ -1,15 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
-import { PropertyImage } from '@/types/property';
+import { PropertyImage as PropertyImageType } from '@/types/property';
+import { PropertyImage } from '@/components/ui/PropertyImage';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, X, Maximize2 } from 'lucide-react';
 
 interface ImageGalleryProps {
-  images: PropertyImage[];
+  images: PropertyImageType[];
 }
 
 export function ImageGallery({ images }: ImageGalleryProps) {
@@ -49,7 +49,7 @@ export function ImageGallery({ images }: ImageGalleryProps) {
   };
 
   // Open lightbox with selected image
-  const openLightbox = (image: PropertyImage) => {
+  const openLightbox = (image: PropertyImageType) => {
     const imageIndex = currentTabImages.findIndex((img) => img.id === image.id);
     setLightboxIndex(imageIndex);
     setLightboxOpen(true);
@@ -101,13 +101,7 @@ export function ImageGallery({ images }: ImageGalleryProps) {
             <>
               {/* Main Image */}
               <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-gray-100 group">
-                <Image
-                  src={selectedImage?.url || photoImages[0].url}
-                  alt="Property photo"
-                  fill
-                  className="object-cover"
-                  priority
-                />
+                <PropertyImage src={selectedImage?.url ?? photoImages[0]?.url} alt="Property photo" priority sizes="(max-width: 768px) 100vw, 70vw" />
                 {/* Expand button */}
                 <button
                   onClick={() => openLightbox(selectedImage || photoImages[0])}
@@ -132,12 +126,7 @@ export function ImageGallery({ images }: ImageGalleryProps) {
                           : 'border-gray-200 hover:border-gray-300',
                       ].join(' ')}
                     >
-                      <Image
-                        src={image.url}
-                        alt={`Thumbnail ${image.orderIndex + 1}`}
-                        fill
-                        className="object-cover"
-                      />
+                      <PropertyImage src={image.url} alt={`Thumbnail ${image.orderIndex + 1}`} sizes="80px" />
                     </button>
                   ))}
                 </div>
@@ -152,12 +141,7 @@ export function ImageGallery({ images }: ImageGalleryProps) {
             <>
               {/* Main Image */}
               <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-gray-100 group">
-                <Image
-                  src={selectedImage?.url || floorplanImages[0].url}
-                  alt="Floor plan"
-                  fill
-                  className="object-contain"
-                />
+                <PropertyImage src={selectedImage?.url ?? floorplanImages[0]?.url} alt="Floor plan" className="object-contain" sizes="(max-width: 768px) 100vw, 70vw" />
                 {/* Expand button */}
                 <button
                   onClick={() => openLightbox(selectedImage || floorplanImages[0])}
@@ -182,12 +166,7 @@ export function ImageGallery({ images }: ImageGalleryProps) {
                           : 'border-gray-200 hover:border-gray-300',
                       ].join(' ')}
                     >
-                      <Image
-                        src={image.url}
-                        alt={`Floor plan ${image.orderIndex + 1}`}
-                        fill
-                        className="object-contain"
-                      />
+                      <PropertyImage src={image.url} alt={`Floor plan ${image.orderIndex + 1}`} className="object-contain" sizes="80px" />
                     </button>
                   ))}
                 </div>
@@ -202,12 +181,7 @@ export function ImageGallery({ images }: ImageGalleryProps) {
             <>
               {/* Main Image (placeholder for actual 360 tour) */}
               <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-gray-100 group">
-                <Image
-                  src={selectedImage?.url || tour360Images[0].url}
-                  alt="360° tour"
-                  fill
-                  className="object-cover"
-                />
+                <PropertyImage src={selectedImage?.url ?? tour360Images[0]?.url} alt="360° tour" sizes="(max-width: 768px) 100vw, 70vw" />
                 <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                   <p className="text-white text-sm font-medium">360° Tour Coming Soon</p>
                 </div>
@@ -227,12 +201,7 @@ export function ImageGallery({ images }: ImageGalleryProps) {
                           : 'border-gray-200 hover:border-gray-300',
                       ].join(' ')}
                     >
-                      <Image
-                        src={image.url}
-                        alt={`Tour ${image.orderIndex + 1}`}
-                        fill
-                        className="object-cover"
-                      />
+                      <PropertyImage src={image.url} alt={`Tour ${image.orderIndex + 1}`} sizes="80px" />
                     </button>
                   ))}
                 </div>
@@ -272,12 +241,7 @@ export function ImageGallery({ images }: ImageGalleryProps) {
 
             {/* Image */}
             <div className="relative w-full h-full">
-              <Image
-                src={currentTabImages[lightboxIndex]?.url}
-                alt={`Image ${lightboxIndex + 1}`}
-                fill
-                className="object-contain"
-              />
+              <PropertyImage src={currentTabImages[lightboxIndex]?.url} alt={`Image ${lightboxIndex + 1}`} className="object-contain" priority sizes="95vw" />
             </div>
 
             {/* Next button */}
