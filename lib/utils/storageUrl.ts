@@ -7,8 +7,9 @@
  */
 export function getPropertyImageUrl(path: string | null | undefined): string {
   if (!path) return ''
-  if (path.startsWith('http')) return path
+  if (path.startsWith('https://')) return path
   // SUPABASE: return supabase.storage.from('property-images').getPublicUrl(path).data.publicUrl
+  // MOCK: Relative paths returned as-is (never occurs while all mock URLs are absolute)
   return path
 }
 
@@ -21,7 +22,8 @@ export function getPropertyImageUrl(path: string | null | undefined): string {
  */
 export function getAvatarUrl(path: string | null | undefined): string {
   if (!path) return ''
-  if (path.startsWith('http')) return path
+  if (path.startsWith('https://')) return path
   // SUPABASE: return supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl
+  // MOCK: Relative paths returned as-is (never occurs while all mock URLs are absolute)
   return path
 }
