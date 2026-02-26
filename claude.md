@@ -844,3 +844,59 @@ Use `handleSupabaseError`, `paginationParams`, `buildSearchQuery`, and `snakeToC
 - `// SINGPASS_SWAP:` - Mock/production switching points
 - `// SUPABASE:` - Database operations (future)
 - `// CRITICAL:` - Security-critical code (NRIC, tokens)
+
+---
+
+## Image Handling Patterns
+
+### PropertyImage Component
+
+All property photo displays use `components/ui/PropertyImage.tsx`, NOT bare `next/image`.
+
+**Signature:**
+```tsx
+<PropertyImage
+  src={url}          // string | null | undefined — falsy → inline fallback immediately
+  alt="description"
+  sizes="..."        // always provide for LCP performance (default: '100vw')
+  priority           // only on above-the-fold hero images
+  className="object-cover | object-contain"  // default: object-cover
+/>
+```
+
+**Rule:** The parent container MUST be `position: relative` (Tailwind: `relative`) and have explicit dimensions. `PropertyImage` always renders with `fill={true}` internally.
+
+**Fallback:** `src` is falsy OR image 404s → gray div + centered Home icon (`role="img" aria-label="Image unavailable"`). No static placeholder files needed.
+
+**Exception:** `LocationTab.tsx` (OneMap map image) uses bare `next/image` with `unoptimized`. This is intentional — a Home icon fallback is wrong for a map.
+
+### URL Helpers
+
+Pass all image paths through the appropriate helper before rendering:
+
+```ts
+import { getPropertyImageUrl, getAvatarUrl } from '@/lib/utils/storageUrl'
+
+// Property images
+<PropertyImage src={getPropertyImageUrl(image.url)} ... />
+
+// User / agent avatars
+<img src={getAvatarUrl(user.avatarPath)} ... />
+```
+
+Both helpers:
+- Return `''` (falsy) when path is null/undefined/empty → `PropertyImage` shows fallback inline
+- Pass through `https://` absolute URLs unchanged (current mock behaviour)
+- Have a `// SUPABASE:` comment marking the exact line to replace with `supabase.storage.from(...).getPublicUrl(path).data.publicUrl`
+
+**SUPABASE migration:** Update only `lib/utils/storageUrl.ts`. Zero changes needed in components.
+
+### next.config.ts domains
+
+All image source domains must be listed in `remotePatterns`. Currently configured:
+- `placehold.co` — mock property images
+- `www.onemap.gov.sg` — OneMap static map (LocationTab)
+- `*.supabase.co` — Supabase Storage (wildcard, all project subdomains)
+- `lh3.googleusercontent.com` — Google OAuth profile pictures (Auth.js)
+- `pravatar.cc` — mock agent/user avatars
+- `picsum.photos` — forward-compat placeholder photos
