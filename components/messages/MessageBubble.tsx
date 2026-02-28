@@ -6,7 +6,7 @@ import type { Message } from '@/types/messages';
 
 const CURRENT_USER_ID = 'user-current';
 
-function timeLabel(date: Date): string {
+function timeLabel(date: Date | string): string {
   const d = new Date(date);
   return d.toLocaleTimeString('en-SG', { hour: '2-digit', minute: '2-digit', hour12: true });
 }

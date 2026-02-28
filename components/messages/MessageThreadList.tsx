@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { MessageThread } from '@/types/messages';
 
-function timeAgo(date: Date): string {
+function timeAgo(date: Date | string): string {
   const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
   if (seconds < 60)  return 'just now';
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;

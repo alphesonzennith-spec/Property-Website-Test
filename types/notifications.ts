@@ -12,7 +12,7 @@ export interface Notification {
   body: string;
   href?: string;
   isRead: boolean;
-  createdAt: Date;
+  createdAt: Date | string;
   propertyId?: string;
   propertyAddress?: string;
   senderName?: string;

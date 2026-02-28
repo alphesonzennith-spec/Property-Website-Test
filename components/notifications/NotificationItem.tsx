@@ -2,13 +2,13 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { MessageSquare, TrendingDown, CheckCircle, FileText, ShieldCheck, X } from 'lucide-react';
+import { MessageSquare, TrendingDown, CheckCircle, FileText, ShieldCheck, X, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/lib/trpc/client';
 import { useNotificationStore } from '@/lib/store/useNotificationStore';
 import type { Notification, NotificationType } from '@/types/notifications';
 
-const TYPE_CONFIG: Record<NotificationType, { icon: React.ElementType; color: string; bg: string }> = {
+const TYPE_CONFIG: Record<NotificationType, { icon: LucideIcon; color: string; bg: string }> = {
   new_message:         { icon: MessageSquare, color: 'text-blue-600',   bg: 'bg-blue-50' },
   enquiry_reply:       { icon: MessageSquare, color: 'text-violet-600', bg: 'bg-violet-50' },
   price_drop:          { icon: TrendingDown,  color: 'text-rose-600',   bg: 'bg-rose-50' },
@@ -16,7 +16,7 @@ const TYPE_CONFIG: Record<NotificationType, { icon: React.ElementType; color: st
   verification_update: { icon: ShieldCheck,   color: 'text-amber-600',  bg: 'bg-amber-50' },
 };
 
-function timeAgo(date: Date): string {
+function timeAgo(date: Date | string): string {
   const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
   if (seconds < 60)  return 'just now';
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;

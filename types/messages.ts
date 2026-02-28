@@ -5,7 +5,7 @@ export interface Message {
   senderName: string;
   senderAvatar?: string;
   body: string;
-  createdAt: Date;
+  createdAt: Date | string;
   isRead: boolean;
 }
 
@@ -17,7 +17,7 @@ export interface MessageThread {
   propertyId?: string;
   propertyAddress?: string;
   lastMessage: string;
-  lastMessageAt: Date;
+  lastMessageAt: Date | string;
   unreadCount: number;
   messages: Message[];
 }
