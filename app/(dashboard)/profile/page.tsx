@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Lock as LockIcon, ShieldCheck, AlertCircle, Fingerprint, Award, BadgeCheck } from 'lucide-react';
+import { Lock as LockIcon, ShieldCheck, AlertCircle, Fingerprint, Award, BadgeCheck, ShoppingCart, Home, Key } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
@@ -27,15 +27,20 @@ export default function ProfilePage() {
     const [locationOfBirth, setLocationOfBirth] = useState('Singapore');
     const [gender, setGender] = useState('M');
     const [baziResult, setBaziResult] = useState<any>(null);
+    const [baziLoading, setBaziLoading] = useState(false);
 
     const generateBaZi = () => {
-        // Mock API call simulation
-        setBaziResult({
-            dayMaster: 'Yang Wood',
-            elements: { Wood: 40, Water: 30, Fire: 10, Earth: 10, Metal: 10 },
-            propertyAffinities: 'Properties near water or with high floors suit your Yang Wood nature.',
-            auspiciousPeriods: '2027-2029'
-        });
+        setBaziLoading(true);
+        // Mock API call simulation with loading delay
+        setTimeout(() => {
+            setBaziResult({
+                dayMaster: 'Yang Wood',
+                elements: { Wood: 40, Water: 30, Fire: 10, Earth: 10, Metal: 10 },
+                propertyAffinities: 'Properties near water or with high floors suit your Yang Wood nature.',
+                auspiciousPeriods: '2027-2029'
+            });
+            setBaziLoading(false);
+        }, 1200);
     };
 
     const handleVerifySingpass = () => {
@@ -307,10 +312,10 @@ export default function ProfilePage() {
                                         </div>
                                         <Button
                                             onClick={generateBaZi}
-                                            disabled={!timeOfBirth || !dateOfBirth}
+                                            disabled={!timeOfBirth || !dateOfBirth || baziLoading}
                                             className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700"
                                         >
-                                            Generate My Ba Zi Reading
+                                            {baziLoading ? 'Generating Reading…' : 'Generate My Ba Zi Reading'}
                                         </Button>
                                     </div>
                                 ) : (
@@ -346,13 +351,19 @@ export default function ProfilePage() {
                                         <TabsTrigger value="rent">Rent</TabsTrigger>
                                     </TabsList>
                                     <TabsContent value="buy" className="mt-4 p-8 text-center border-2 border-dashed border-gray-200 rounded-lg">
-                                        <p className="text-gray-500 text-sm">No recorded purchase transactions.</p>
+                                        <ShoppingCart className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                                        <p className="text-gray-500 text-sm font-medium">No purchase transactions yet</p>
+                                        <p className="text-gray-400 text-xs mt-1">Properties you buy will appear here.</p>
                                     </TabsContent>
                                     <TabsContent value="sell" className="mt-4 p-8 text-center border-2 border-dashed border-gray-200 rounded-lg">
-                                        <p className="text-gray-500 text-sm">No recorded sale transactions.</p>
+                                        <Home className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                                        <p className="text-gray-500 text-sm font-medium">No sale transactions yet</p>
+                                        <p className="text-gray-400 text-xs mt-1">Properties you sell will appear here.</p>
                                     </TabsContent>
                                     <TabsContent value="rent" className="mt-4 p-8 text-center border-2 border-dashed border-gray-200 rounded-lg">
-                                        <p className="text-gray-500 text-sm">No recorded rental agreements.</p>
+                                        <Key className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                                        <p className="text-gray-500 text-sm font-medium">No rental agreements yet</p>
+                                        <p className="text-gray-400 text-xs mt-1">Rental agreements will appear here.</p>
                                     </TabsContent>
                                 </Tabs>
                             </CardContent>

@@ -6,3 +6,5 @@ export * from './transactions';
 export * from './serviceProviders';
 export * from './learningModules';
 export * from './regulatoryConfig';
+export * from './notifications';
+export * from './messages';

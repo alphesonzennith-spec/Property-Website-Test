@@ -613,6 +613,8 @@ export default function AffordabilityCalculatorPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-52 rounded-2xl" />)}
                 </div>
+              ) : matchedProperties.isError ? (
+                <p className="text-sm text-red-500">Unable to load matching properties. Please try again.</p>
               ) : matchedProperties.data?.data && matchedProperties.data.data.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {matchedProperties.data.data.slice(0, 4).map((prop) => (

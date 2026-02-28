@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { CalculatorNav } from '@/components/calculators/CalculatorNav';
 import { CalculatorContainer } from '@/components/calculators/CalculatorContainer';
 import { PillToggle } from '@/components/calculators/PillToggle';
@@ -395,32 +396,41 @@ export default function MortgageCalculatorPage() {
                             <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1">
                                 Summary
                             </h3>
-                            <StatCard
-                                label="Monthly Repayment"
-                                value={summary ? formatSGDFull(summary.monthlyRepayment) : '—'}
-                                highlight
-                                sub={summary ? `Over ${tenureYears} years` : undefined}
-                            />
-                            <StatCard
-                                label="Total Loan Amount"
-                                value={summary ? formatSGDFull(summary.totalLoanAmount) : '—'}
-                            />
-                            <StatCard
-                                label="Total Interest Paid"
-                                value={summary ? formatSGDFull(summary.totalInterestPaid) : '—'}
-                            />
-                            <StatCard
-                                label="Total Payment"
-                                value={summary ? formatSGDFull(summary.totalPayment) : '—'}
-                                sub={summary ? `Loan + Interest` : undefined}
-                            />
-                            <StatCard
-                                label="Interest as % of Total"
-                                value={summary ? `${summary.interestPercentage.toFixed(1)}%` : '—'}
-                            />
+                            <Suspense fallback={<Skeleton className="w-full h-48 rounded-xl" />}>
+                                <StatCard
+                                    label="Monthly Repayment"
+                                    value={summary ? formatSGDFull(summary.monthlyRepayment) : '—'}
+                                    highlight
+                                    sub={summary ? `Over ${tenureYears} years` : undefined}
+                                />
+                                <StatCard
+                                    label="Total Loan Amount"
+                                    value={summary ? formatSGDFull(summary.totalLoanAmount) : '—'}
+                                />
+                                <StatCard
+                                    label="Total Interest Paid"
+                                    value={summary ? formatSGDFull(summary.totalInterestPaid) : '—'}
+                                />
+                                <StatCard
+                                    label="Total Payment"
+                                    value={summary ? formatSGDFull(summary.totalPayment) : '—'}
+                                    sub={summary ? `Loan + Interest` : undefined}
+                                />
+                                <StatCard
+                                    label="Interest as % of Total"
+                                    value={summary ? `${summary.interestPercentage.toFixed(1)}%` : '—'}
+                                />
+                            </Suspense>
                         </div>
                     </div>
                 </CalculatorContainer>
+
+                {/* Empty prompt when no property value entered */}
+                {chartData.length === 0 && (
+                    <div className="mt-8 rounded-2xl border border-dashed border-gray-200 bg-gray-50 py-12 text-center">
+                        <p className="text-sm font-medium text-gray-500">Enter a property value above to see your amortization schedule.</p>
+                    </div>
+                )}
 
                 {/* ── Amortization Chart ────────────────────────────────────────── */}
                 {chartData.length > 0 && (

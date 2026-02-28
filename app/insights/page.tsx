@@ -1,9 +1,13 @@
+import { Suspense } from 'react';
 import { DashboardControls } from './DashboardControls';
 import { WidgetGrid } from './WidgetGrid';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import SingaporeMapCanvas from '@/components/home/SingaporeMapCanvas';
 import { AnalyticsTab } from './AnalyticsTab';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { Skeleton } from '@/components/ui/skeleton';
+// SingaporeMapClient wraps the dynamic() call with ssr:false inside a 'use client'
+// boundary — required because ssr:false is not allowed in Server Components.
+import { SingaporeMapClient } from './SingaporeMapClient';
 
 export default function InsightsDashboard() {
     return (
@@ -14,7 +18,9 @@ export default function InsightsDashboard() {
                     <h1 className="text-2xl font-bold text-gray-900 hidden sm:block mb-6">Dashboard</h1>
 
                     <TabsContent value="analytics" className="w-full min-h-[800px]">
-                        <AnalyticsTab />
+                        <Suspense fallback={<div className="space-y-4"><Skeleton className="h-48 w-full rounded-xl" /><Skeleton className="h-64 w-full rounded-xl" /></div>}>
+                            <AnalyticsTab />
+                        </Suspense>
                     </TabsContent>
 
 
@@ -29,7 +35,7 @@ export default function InsightsDashboard() {
                             </div>
                         </div>
                         <div className="w-full h-full">
-                            <SingaporeMapCanvas />
+                            <SingaporeMapClient />
                         </div>
                     </TabsContent>
                 </main>

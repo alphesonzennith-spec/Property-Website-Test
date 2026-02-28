@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Responsive, Layout } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -141,7 +142,9 @@ export function WidgetGrid() {
                             <span className="text-xs text-gray-400 bg-white px-2 py-1 rounded border">psf</span>
                         </div>
                         <div className="flex-1 overflow-hidden">
-                            <PriceTrendWidget />
+                            <Suspense fallback={<Skeleton className="w-full h-full rounded-none" />}>
+                                <PriceTrendWidget />
+                            </Suspense>
                         </div>
                     </div>
                 )}
@@ -154,7 +157,9 @@ export function WidgetGrid() {
                             <span className="text-xs text-gray-400 bg-white px-2 py-1 rounded border">count</span>
                         </div>
                         <div className="flex-1 overflow-hidden">
-                            <VolumeBarWidget />
+                            <Suspense fallback={<Skeleton className="w-full h-full rounded-none" />}>
+                                <VolumeBarWidget />
+                            </Suspense>
                         </div>
                     </div>
                 )}
@@ -167,7 +172,9 @@ export function WidgetGrid() {
                             <span className="text-xs text-gray-400 bg-white px-2 py-1 rounded border">psf</span>
                         </div>
                         <div className="flex-1 overflow-hidden">
-                            <DistrictHeatmapWidget />
+                            <Suspense fallback={<Skeleton className="w-full h-full rounded-none" />}>
+                                <DistrictHeatmapWidget />
+                            </Suspense>
                         </div>
                     </div>
                 )}
@@ -180,7 +187,9 @@ export function WidgetGrid() {
                             <span className="text-xs text-gray-400 bg-white px-2 py-1 rounded border">volume</span>
                         </div>
                         <div className="flex-1 overflow-hidden">
-                            <PriceDistributionWidget />
+                            <Suspense fallback={<Skeleton className="w-full h-full rounded-none" />}>
+                                <PriceDistributionWidget />
+                            </Suspense>
                         </div>
                     </div>
                 )}
@@ -193,7 +202,9 @@ export function WidgetGrid() {
                             <span className="text-xs text-gray-400 bg-white px-2 py-1 rounded border">%</span>
                         </div>
                         <div className="flex-1 overflow-hidden">
-                            <RentalYieldWidget />
+                            <Suspense fallback={<Skeleton className="w-full h-full rounded-none" />}>
+                                <RentalYieldWidget />
+                            </Suspense>
                         </div>
                     </div>
                 )}
@@ -206,7 +217,9 @@ export function WidgetGrid() {
                             <span className="text-xs text-gray-400 bg-white px-2 py-1 rounded border">market</span>
                         </div>
                         <div className="flex-1 overflow-hidden">
-                            <NotableTransactionsWidget />
+                            <Suspense fallback={<Skeleton className="w-full h-full rounded-none" />}>
+                                <NotableTransactionsWidget />
+                            </Suspense>
                         </div>
                     </div>
                 )}
@@ -220,7 +233,9 @@ export function WidgetGrid() {
                             </h3>
                         </div>
                         <div className="flex-1 overflow-hidden">
-                            <AiMarketAnalysisWidget />
+                            <Suspense fallback={<Skeleton className="w-full h-full rounded-none" />}>
+                                <AiMarketAnalysisWidget />
+                            </Suspense>
                         </div>
                     </div>
                 )}

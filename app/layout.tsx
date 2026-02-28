@@ -6,6 +6,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { Toaster } from '@/components/ui/sonner';
 import { MockControlPanel } from '@/components/dev/MockControlPanel';
+import { WebVitals } from './web-vitals';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Footer />
           <Toaster />
           <MockControlPanel />
+          <WebVitals />
         </Providers>
       </body>
     </html>

@@ -123,6 +123,9 @@ export function MarketSnapshot() {
           <div className="flex-[40]">
             <p className="text-sm text-gray-500 mb-4 font-medium">Recent Transactions</p>
             <div className="space-y-3">
+              {recentTransactions.length === 0 && (
+                <p className="text-sm text-gray-400 py-4 text-center">No recent transactions available.</p>
+              )}
               {recentTransactions.map((tx) => (
                 <div
                   key={`${tx.propertyId}-${String(tx.transactionDate.getTime())}`}

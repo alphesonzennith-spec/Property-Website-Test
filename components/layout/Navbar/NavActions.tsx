@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Bell, CheckCircle, ChevronDown, LayoutDashboard } from 'lucide-react';
+import { CheckCircle, ChevronDown, LayoutDashboard, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -15,6 +15,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
+import { MessageDropdown } from '@/components/messages/MessageDropdown';
 
 export function NavActions() {
   const {
@@ -30,9 +32,6 @@ export function NavActions() {
   // Compute initials safely from the legal component
   const avatarInitials = legalName ? legalName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U';
   const firstName = legalName ? legalName.split(' ')[0] : 'User';
-
-  // Mock notification count for UI sake
-  const notificationCount = 3;
 
   return (
     <div className="hidden lg:flex items-center gap-3">
@@ -57,29 +56,21 @@ export function NavActions() {
         </>
       ) : (
         <>
-          {/* Notification bell */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative text-gray-500 hover:text-[#1E293B] hover:bg-gray-100 h-8 w-8 rounded-full"
-          >
-            <Bell className="w-4 h-4" />
-            {notificationCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#f59e0b] text-[#0d2137] text-[9px] font-bold rounded-full flex items-center justify-center">
-                {notificationCount}
-              </span>
-            )}
-          </Button>
+          {/* Message dropdown */}
+          <MessageDropdown />
 
-          {/* Dashboard button — moved to center-right area */}
+          {/* Notification bell dropdown */}
+          <NotificationDropdown />
+
+          {/* Dashboard button — icon only */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                size="sm"
-                className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-full px-4 h-8 text-xs gap-1.5 flex items-center"
+                size="icon"
+                className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-full h-9 w-9"
+                aria-label="Dashboard"
               >
-                <LayoutDashboard className="w-3.5 h-3.5" />
-                Dashboard <ChevronDown className="w-3 h-3 text-white/50" />
+                <LayoutDashboard className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
@@ -129,6 +120,12 @@ export function NavActions() {
                   <Link href="/insights" className="flex items-center gap-2">
                     <LayoutDashboard className="w-4 h-4" />
                     <span>Dashboard</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer py-2 px-3 focus:bg-emerald-50 focus:text-emerald-700 rounded-md">
+                  <Link href="/messages" className="flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4" />
+                    <span>Messages</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="cursor-pointer py-2 px-3 focus:bg-emerald-50 focus:text-emerald-700 rounded-md">

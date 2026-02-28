@@ -65,9 +65,10 @@ function getPropertyTypeLabel(property: Property): string {
 interface PropertyCardProps {
   property: Property;
   className?: string;
+  priority?: boolean;
 }
 
-export function PropertyCard({ property, className = '' }: PropertyCardProps) {
+export function PropertyCard({ property, className = '', priority = false }: PropertyCardProps) {
   const primaryImage =
     property.images.find((img) => img.isPrimary) ?? property.images[0] ?? null;
 
@@ -153,6 +154,7 @@ export function PropertyCard({ property, className = '' }: PropertyCardProps) {
           src={primaryImage?.url}
           alt={property.address}
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          priority={priority}
         />
 
         {/* Bottom gradient overlay */}

@@ -82,7 +82,7 @@ export default function DirectoryPage() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
 
                 {/* Special AI Agents Section */}
-                {(!searchQuery && activeTab === 'all') && (
+                {(!searchQuery && activeTab === 'all' && aiAgents.length > 0) && (
                     <section className="animate-in fade-in slide-in-from-bottom-4 duration-700">
                         <div className="flex items-center justify-between mb-8">
                             <div>

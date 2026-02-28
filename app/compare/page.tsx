@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, AlertTriangle } from 'lucide-react';
 
 function ComparisonContent() {
   const searchParams = useSearchParams();
@@ -56,7 +56,19 @@ function ComparisonContent() {
     );
   }
 
+  const hasPartialLoad = !isLoading && properties.length > 0 && properties.length < ids.length;
+
   return (
+    <>
+      {hasPartialLoad && (
+        <Alert className="mb-6 border-amber-200 bg-amber-50">
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
+          <AlertTitle className="text-amber-900">Some properties could not be loaded</AlertTitle>
+          <AlertDescription className="text-amber-700">
+            Showing {properties.length} of {ids.length} selected properties. One or more listings may have been removed.
+          </AlertDescription>
+        </Alert>
+      )}
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {properties.map((property) => {
         const primaryImage = property.images.find((img) => img.isPrimary) ?? property.images[0];
@@ -156,6 +168,7 @@ function ComparisonContent() {
         );
       })}
     </div>
+    </>
   );
 }
 

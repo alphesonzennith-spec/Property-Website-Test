@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -169,7 +170,14 @@ export default function TDSRCalculatorPage() {
 
             {/* Right Column: Results */}
             <div className="lg:col-span-1">
-              <ResultsPanel title="Results" results={results} />
+              <Suspense fallback={<Skeleton className="w-full h-48 rounded-xl" />}>
+                <ResultsPanel title="Results" results={results} />
+              </Suspense>
+              {totalIncome === 0 && (
+                <p className="text-xs text-gray-400 mt-3 text-center">
+                  Enter your income above to see your TDSR results.
+                </p>
+              )}
             </div>
           </div>
         </CalculatorContainer>

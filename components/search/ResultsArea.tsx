@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { PropertyCard } from '@/components/properties/PropertyCard';
 import { useSearchStore } from '@/lib/store';
 import { trpc } from '@/lib/trpc/client';
-import { AlertCircle, ChevronLeft, ChevronRight, MapPin, List } from 'lucide-react';
+import { AlertCircle, ChevronLeft, ChevronRight, MapPin, List, SearchX } from 'lucide-react';
 import { ListingType } from '@/types';
 
 interface ResultsAreaProps {
@@ -18,7 +18,7 @@ interface ResultsAreaProps {
 }
 
 export function ResultsArea({ listingType, compact }: ResultsAreaProps) {
-  const { filters, comparisonList, addToComparison, removeFromComparison, mapViewEnabled, toggleMapView } = useSearchStore();
+  const { filters, resetFilters, comparisonList, addToComparison, removeFromComparison, mapViewEnabled, toggleMapView } = useSearchStore();
   const [sortBy, setSortBy] = useState<string>('quality_score');
   const [page, setPage] = useState(1);
 
@@ -132,9 +132,13 @@ export function ResultsArea({ listingType, compact }: ResultsAreaProps) {
           ))}
         </div>
       ) : (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">No properties found matching your criteria.</p>
-          <p className="text-gray-400 text-sm mt-2">Try adjusting your filters or search query.</p>
+        <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-gray-200">
+          <SearchX className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+          <p className="text-gray-700 font-semibold text-lg">No properties found</p>
+          <p className="text-gray-400 text-sm mt-1 mb-5">Try adjusting your filters or search query.</p>
+          <Button variant="outline" onClick={resetFilters}>
+            Reset all filters
+          </Button>
         </div>
       )}
 

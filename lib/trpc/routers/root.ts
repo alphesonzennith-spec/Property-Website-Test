@@ -6,6 +6,8 @@ import { agentsRouter }           from './agents';
 import { serviceProvidersRouter } from './serviceProviders';
 import { learningRouter }         from './learning';
 import { calculatorsRouter }      from './calculators';
+import { notificationsRouter }    from './notifications';
+import { messagesRouter }         from './messages';
 
 export const appRouter = router({
   properties:       propertiesRouter,
@@ -14,6 +16,8 @@ export const appRouter = router({
   serviceProviders: serviceProvidersRouter,
   learning:         learningRouter,
   calculators:      calculatorsRouter,
+  notifications:    notificationsRouter,
+  messages:         messagesRouter,
 });
 
 /** Type exported for use by the client-side tRPC hooks. */
